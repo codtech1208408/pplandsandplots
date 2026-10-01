@@ -51,7 +51,7 @@ function MainRouter() {
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 overflow-x-hidden relative">
       <Navbar />
-      <main className="flex-1">
+      <main className="flex-1 pt-20 sm:pt-24 md:pt-28">
         {renderPage()}
       </main>
       <Footer />
