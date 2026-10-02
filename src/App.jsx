@@ -4,6 +4,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import EnquiryModal from './components/EnquiryModal';
 import FloatingWhatsApp from './components/FloatingWhatsApp';
+import MobileBottomNav from './components/MobileBottomNav';
 
 import HomePage from './pages/HomePage';
 import AboutPage from './pages/AboutPage';
@@ -49,14 +50,15 @@ function MainRouter() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 overflow-x-hidden relative">
+    <div className="min-h-screen flex flex-col bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 overflow-x-hidden relative pb-16 md:pb-0">
       <Navbar />
-      <main className="flex-1 pt-20 sm:pt-24 md:pt-28">
+      <main className="flex-1 pt-16 sm:pt-24 md:pt-28">
         {renderPage()}
       </main>
       <Footer />
       <EnquiryModal />
       <FloatingWhatsApp />
+      <MobileBottomNav />
     </div>
   );
 }

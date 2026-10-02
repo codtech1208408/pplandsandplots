@@ -3,6 +3,13 @@ import { useApp } from '../context/AppContext';
 import PropertyCard from '../components/PropertyCard';
 import PropertyDetailsModal from '../components/PropertyDetailsModal';
 import PolicyBanner from '../components/PolicyBanner';
+import MobileHeroAndSearch from '../components/mobile/MobileHeroAndSearch';
+import MobileServices from '../components/mobile/MobileServices';
+import MobileListings from '../components/mobile/MobileListings';
+import MobileWhyChooseUs from '../components/mobile/MobileWhyChooseUs';
+import MobileVisionMission from '../components/mobile/MobileVisionMission';
+import MobileLocations from '../components/mobile/MobileLocations';
+import MobileContactSection from '../components/mobile/MobileContactSection';
 import { 
   PROPERTY_CATEGORIES, 
   APPROVAL_TYPES, 
@@ -35,9 +42,23 @@ export default function HomePage() {
   const featuredProperties = properties.filter(p => p.featured || p.status === 'Available').slice(0, 3);
 
   return (
-    <div className="space-y-16 md:space-y-24 pb-16">
+    <div className="pb-16">
       
-      {/* 1. HERO SECTION */}
+      {/* MOBILE VIEW (MATCHES USER SCREENSHOT EXACTLY ON MOBILE) */}
+      <div className="block md:hidden px-4 space-y-4">
+        <MobileHeroAndSearch />
+        <MobileServices />
+        <MobileListings />
+        <MobileWhyChooseUs />
+        <MobileVisionMission />
+        <MobileLocations />
+        <MobileContactSection />
+      </div>
+
+      {/* DESKTOP VIEW (100% UNCHANGED FOR DESKTOP SCREENS) */}
+      <div className="hidden md:block space-y-16 md:space-y-24">
+        
+        {/* 1. HERO SECTION */}
       <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden bg-slate-950 text-white rounded-b-3xl md:rounded-b-[2.5rem] shadow-2xl">
         
         {/* Background Image with Deep Overlay */}
@@ -550,6 +571,8 @@ export default function HomePage() {
 
         </div>
       </section>
+
+      </div> {/* End DESKTOP VIEW */}
 
       {/* Property Details Modal Renderer */}
       {selectedProperty && (

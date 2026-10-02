@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import Logo from './Logo';
-import { Sun, Moon, Menu, X, Phone, MessageSquare } from 'lucide-react';
+import { Sun, Moon, Menu, X, Phone, MessageSquare, Search } from 'lucide-react';
 
 export default function Navbar() {
   const { theme, toggleTheme, currentRoute, navigate, COMPANY_DETAILS } = useApp();
@@ -20,10 +20,19 @@ export default function Navbar() {
     setMobileMenuOpen(false);
   };
 
+  const handleSearchClick = () => {
+    navigate('/portfolio');
+    setMobileMenuOpen(false);
+    setTimeout(() => {
+      const el = document.getElementById('search-filter-section');
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }, 150);
+  };
+
   return (
     <header className="fixed top-0 left-0 right-0 w-full z-50 glass-header border-b border-slate-200/80 dark:border-slate-800/80 transition-all duration-300 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20 sm:h-24 md:h-28 py-2">
+        <div className="flex items-center justify-between h-16 sm:h-20 md:h-28 py-2">
           
           {/* Logo */}
           <Logo size="md" />
@@ -48,7 +57,7 @@ export default function Navbar() {
             })}
           </nav>
 
-          {/* Header Action Buttons (WhatsApp & Theme Switcher) */}
+          {/* Header Action Buttons (WhatsApp & Theme Switcher) - Desktop */}
           <div className="hidden md:flex items-center space-x-3">
             {/* Theme Toggle */}
             <button
@@ -76,14 +85,23 @@ export default function Navbar() {
             </a>
           </div>
 
-          {/* Mobile Hamburger Button */}
-          <div className="flex md:hidden items-center space-x-2">
+          {/* Mobile Actions Header (Search, Theme, Menu) matching user screenshot */}
+          <div className="flex md:hidden items-center space-x-1 sm:space-x-2">
+            <button
+              onClick={handleSearchClick}
+              className="p-2 rounded-lg text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              aria-label="Search properties"
+              title="Search properties"
+            >
+              <Search className="w-5 h-5" />
+            </button>
+
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+              className="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               aria-label="Toggle theme"
             >
-              {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5 text-amber-400" />}
+              {theme === 'light' ? <Moon className="w-5 h-5 text-slate-700" /> : <Sun className="w-5 h-5 text-amber-400" />}
             </button>
 
             <button
@@ -92,7 +110,7 @@ export default function Navbar() {
               aria-label="Toggle Menu"
               aria-expanded={mobileMenuOpen}
             >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {mobileMenuOpen ? <X className="w-6 h-6 text-red-600" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
         </div>
