@@ -4,7 +4,7 @@ import Logo from './Logo';
 import { Sun, Moon, Menu, X, Phone, MessageSquare, Search } from 'lucide-react';
 
 export default function Navbar() {
-  const { theme, toggleTheme, currentRoute, navigate, COMPANY_DETAILS } = useApp();
+  const { theme, toggleTheme, currentRoute, navigate, setSelectedProperty, COMPANY_DETAILS } = useApp();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navLinks = [
@@ -16,11 +16,13 @@ export default function Navbar() {
   ];
 
   const handleNav = (route) => {
+    if (setSelectedProperty) setSelectedProperty(null);
     navigate(route);
     setMobileMenuOpen(false);
   };
 
   const handleSearchClick = () => {
+    if (setSelectedProperty) setSelectedProperty(null);
     navigate('/portfolio');
     setMobileMenuOpen(false);
     setTimeout(() => {
@@ -30,7 +32,7 @@ export default function Navbar() {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 w-full z-50 glass-header border-b border-slate-200/80 dark:border-slate-800/80 transition-all duration-300 shadow-sm">
+    <header className="fixed top-0 left-0 right-0 w-full z-[10000] glass-header border-b border-slate-200/80 dark:border-slate-800/80 transition-all duration-300 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-20 md:h-28 py-2">
           

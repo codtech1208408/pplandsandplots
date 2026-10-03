@@ -84,52 +84,52 @@ export default function EnquiryModal() {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm overflow-y-auto animate-fade-in"
+      className="fixed top-16 sm:top-20 md:top-28 bottom-14 md:bottom-0 left-0 right-0 z-[10005] flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md overflow-y-auto animate-fade-in"
       role="dialog"
       aria-modal="true"
     >
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-lg w-full p-6 md:p-8 shadow-2xl relative">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl max-w-lg w-full max-h-full overflow-y-auto p-4 sm:p-6 md:p-8 shadow-2xl relative my-auto">
         
         {/* Close button */}
         <button
           onClick={closeEnquiry}
-          className="absolute top-4 right-4 p-2 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+          className="absolute top-3 right-3 sm:top-4 sm:right-4 p-2 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors z-10"
           aria-label="Close form"
         >
           <X className="w-5 h-5" />
         </button>
 
         {submitted ? (
-          <div className="text-center py-8 space-y-4 animate-fade-in">
-            <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto">
-              <CheckCircle2 className="w-10 h-10" />
+          <div className="text-center py-6 sm:py-8 space-y-3 sm:space-y-4 animate-fade-in">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto">
+              <CheckCircle2 className="w-8 h-8 sm:w-10 sm:h-10" />
             </div>
-            <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white">
+            <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">
               Enquiry Received Successfully!
             </h3>
-            <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed max-w-sm mx-auto">
+            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed max-w-sm mx-auto">
               Thank you, <span className="font-bold text-slate-900 dark:text-white">{formData.name}</span>. The team at <span className="font-bold text-emerald-600">{COMPANY_DETAILS.name}</span> will contact you shortly at <span className="font-bold text-slate-900 dark:text-white">{formData.phone}</span>.
             </p>
-            <div className="pt-4">
+            <div className="pt-3">
               <button
                 onClick={closeEnquiry}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-8 rounded-xl shadow-md transition-all text-sm"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-6 rounded-xl shadow-md transition-all text-xs sm:text-sm"
               >
                 Close
               </button>
             </div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 block mb-1">
+          <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+            <div className="pr-8">
+              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 block mb-0.5">
                 Property Inquiry & Assistance
               </span>
-              <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white">
+              <h3 className="text-lg sm:text-2xl font-extrabold text-slate-900 dark:text-white">
                 {enquiryProperty ? 'Enquire About Listing' : 'Send Us an Enquiry'}
               </h3>
               {enquiryProperty && (
-                <p className="text-xs font-semibold text-amber-600 dark:text-amber-400 mt-1 line-clamp-1">
+                <p className="text-xs font-semibold text-amber-600 dark:text-amber-400 mt-0.5 line-clamp-1">
                   Target: {enquiryProperty.title}
                 </p>
               )}

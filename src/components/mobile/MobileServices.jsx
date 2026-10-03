@@ -37,37 +37,34 @@ export default function MobileServices() {
   ];
 
   return (
-    <div className="md:hidden space-y-4 py-4">
-      {/* Tag */}
-      <div className="flex items-center gap-2">
-        <span className="w-6 h-0.5 bg-amber-500 rounded-full" />
-        <span className="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
-          OUR SERVICES
-        </span>
-      </div>
-
-      {/* Heading */}
-      <div className="space-y-1">
-        <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white">
-          Explore Properties
+    <div className="md:hidden space-y-3 py-2">
+      {/* Section Header */}
+      <div className="space-y-0.5" data-aos="fade-up">
+        <div className="flex items-center gap-1.5">
+          <span className="w-5 h-0.5 bg-amber-500 rounded-full" />
+          <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+            OUR SERVICES
+          </span>
+        </div>
+        <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">
+          Explore Services
         </h2>
-        <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-          Find the perfect land or plot for your business, home, or future investment.
-        </p>
       </div>
 
-      {/* 2x2 Grid */}
-      <div className="grid grid-cols-2 gap-3 pt-2">
-        {services.map((service) => {
+      {/* Vertical Stacked Service Cards */}
+      <div className="grid grid-cols-1 gap-3">
+        {services.map((service, idx) => {
           const Icon = service.icon;
           return (
             <div
               key={service.id}
+              data-aos="fade-up"
+              data-aos-delay={idx * 100}
               onClick={() => navigate('/portfolio')}
-              className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col justify-between cursor-pointer"
+              className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm hover:shadow-md transition-all flex items-center p-2.5 gap-3 cursor-pointer"
             >
               {/* Card Image */}
-              <div className="relative aspect-[16/10] overflow-hidden bg-slate-100 dark:bg-slate-800">
+              <div className="relative w-24 h-24 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0">
                 <img
                   src={service.image}
                   alt={service.title}
@@ -76,20 +73,20 @@ export default function MobileServices() {
               </div>
 
               {/* Card Body */}
-              <div className="p-3 space-y-2 flex-1 flex flex-col justify-between">
-                <div className="space-y-1.5">
-                  <div className="w-7 h-7 rounded-lg bg-orange-100 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400 flex items-center justify-center">
-                    <Icon className="w-4 h-4" />
+              <div className="flex-1 min-w-0 space-y-1">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-5 h-5 rounded-md bg-orange-100 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400 flex items-center justify-center shrink-0">
+                    <Icon className="w-3 h-3" />
                   </div>
-                  <h3 className="text-xs font-extrabold text-slate-900 dark:text-white">
+                  <h3 className="text-xs font-extrabold text-slate-900 dark:text-white truncate">
                     {service.title}
                   </h3>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight line-clamp-3">
-                    {service.desc}
-                  </p>
                 </div>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight line-clamp-2">
+                  {service.desc}
+                </p>
 
-                <button className="pt-2 text-[11px] font-bold text-red-600 dark:text-red-400 flex items-center gap-1 hover:underline">
+                <button className="pt-0.5 text-[10px] font-bold text-red-600 dark:text-red-400 flex items-center gap-1">
                   <span>View Properties</span>
                   <ArrowRight className="w-3 h-3" />
                 </button>

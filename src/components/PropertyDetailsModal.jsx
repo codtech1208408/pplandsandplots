@@ -1,10 +1,18 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import PolicyBanner from './PolicyBanner';
-import { X, ArrowLeft, MapPin, Maximize2, ShieldCheck, Phone, MessageSquare, Mail, CheckCircle2, Eye } from 'lucide-react';
+import { 
+  X, 
+  MapPin, 
+  CheckCircle2, 
+  Eye, 
+  MessageSquare,
+  ChevronLeft, 
+  ChevronRight
+} from 'lucide-react';
 
 export default function PropertyDetailsModal({ property, onClose }) {
-  const { openEnquiry, COMPANY_DETAILS } = useApp();
+  const { openEnquiry } = useApp();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   if (!property) return null;
@@ -14,98 +22,82 @@ export default function PropertyDetailsModal({ property, onClose }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-0 md:p-4 bg-slate-950/80 backdrop-blur-sm overflow-y-auto animate-fade-in"
+      className="fixed top-16 sm:top-20 md:top-28 bottom-14 md:bottom-0 left-0 right-0 z-[9999] flex items-center justify-center p-0 md:p-4 bg-slate-950/90 backdrop-blur-md overflow-y-auto animate-fade-in"
       role="dialog"
       aria-modal="true"
       aria-labelledby="property-modal-title"
     >
-      <div className="bg-white dark:bg-slate-900 border-0 md:border border-slate-200 dark:border-slate-800 rounded-none md:rounded-3xl max-w-4xl w-full min-h-screen md:min-h-0 md:max-h-[90vh] overflow-y-auto shadow-2xl relative my-0 md:my-8 flex flex-col justify-between">
+      <div className="bg-white dark:bg-slate-900 border-0 md:border border-slate-200 dark:border-slate-800 rounded-none md:rounded-3xl max-w-4xl w-full h-full md:h-auto md:max-h-[85vh] overflow-y-auto shadow-2xl relative my-0 flex flex-col justify-between">
         
-        <div>
-          {/* Mobile Back Arrow Header (Screen 7 top bar) */}
-          <div className="md:hidden flex items-center justify-between p-3 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-20">
-            <button
-              onClick={onClose}
-              className="p-2 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full"
-              aria-label="Back"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-            <span className="font-extrabold text-sm text-slate-900 dark:text-white">Property Details</span>
-            <div className="w-9" />
-          </div>
-
-          {/* Desktop Close Button */}
-          <button
-            onClick={onClose}
-            className="hidden md:flex absolute top-4 right-4 z-10 p-2.5 rounded-full bg-slate-900/60 hover:bg-slate-900 text-white backdrop-blur-md transition-colors"
-            aria-label="Close modal"
-          >
-            <X className="w-5 h-5" />
-          </button>
-
-          {/* Gallery Section */}
-          <div className="relative bg-slate-950 aspect-[16/10] md:aspect-[21/9] overflow-hidden md:rounded-t-3xl">
+        <div className="w-full shrink-0">
+          {/* Main Image Banner - Large, Full Bleed Height on Mobile & Desktop */}
+          <div className="relative w-full h-[280px] xs:h-[320px] sm:h-[400px] md:h-[480px] bg-slate-950 overflow-hidden shrink-0 rounded-t-none md:rounded-t-3xl">
+            {/* Main Image */}
             <img
               src={property.images[activeImageIndex] || property.images[0]}
               alt={property.title}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover object-center transition-all duration-300"
             />
-            
-            {/* Mobile For Sale badge top left & 1/5 counter bottom right */}
-            <div className="absolute top-3 left-3">
-              <span className="bg-red-600 text-white text-xs font-extrabold px-3 py-1 rounded-full shadow-md uppercase tracking-wider">
-                For Sale
-              </span>
-            </div>
 
-            <div className="absolute bottom-3 right-3 bg-slate-900/80 text-white text-xs font-mono font-bold px-2.5 py-1 rounded-md backdrop-blur-sm">
-              {activeImageIndex + 1}/{property.images.length || 5}
-            </div>
-            
-            <div className="hidden md:flex absolute bottom-4 left-4 right-4 items-end justify-between text-white">
-              <div>
-                <span className="bg-emerald-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-2 inline-block shadow-md">
-                  {property.category}
-                </span>
-                <h2 id="property-modal-title" className="text-xl md:text-3xl font-extrabold text-white">
-                  {property.title}
-                </h2>
-                <p className="flex items-center gap-1.5 text-xs md:text-sm text-slate-300 mt-1">
-                  <MapPin className="w-4 h-4 text-emerald-400" />
-                  <span>{property.location}</span>
-                </p>
-              </div>
-              
-              <span className="bg-slate-900/90 text-emerald-400 font-extrabold text-sm md:text-lg px-4 py-2 rounded-xl border border-emerald-500/30">
-                {property.price}
-              </span>
-            </div>
-          </div>
+            {/* Gradient Overlay for Top Bar readability */}
+            <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/80 via-black/30 to-transparent pointer-events-none z-10" />
 
-          {/* Thumbnails if multiple images */}
-          {property.images.length > 1 && (
-            <div className="flex items-center gap-2 p-3 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800 overflow-x-auto">
-              {property.images.map((img, idx) => (
+            {/* Floating Top Control Bar */}
+            <div className="absolute top-3 left-3 right-3 flex items-center justify-between z-20">
+              <button
+                onClick={onClose}
+                className="w-10 h-10 rounded-full bg-slate-950/70 hover:bg-slate-900 text-white flex items-center justify-center backdrop-blur-md border border-white/20 shadow-lg active:scale-95 transition-all"
+                aria-label="Back"
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </button>
+
+              <div className="flex items-center gap-2">
+                {property.images.length > 1 && (
+                  <span className="font-extrabold text-xs font-mono text-white bg-slate-950/70 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/20 shadow-md">
+                    {activeImageIndex + 1} / {property.images.length}
+                  </span>
+                )}
+
                 <button
-                  key={idx}
-                  onClick={() => setActiveImageIndex(idx)}
-                  className={`w-16 h-12 rounded-lg overflow-hidden border-2 transition-all shrink-0 ${
-                    activeImageIndex === idx
-                      ? 'border-red-500 scale-105 shadow-md'
-                      : 'border-transparent opacity-70 hover:opacity-100'
-                  }`}
+                  onClick={onClose}
+                  className="hidden md:flex p-2.5 rounded-full bg-slate-950/70 hover:bg-slate-900 text-white backdrop-blur-md border border-white/20 shadow-lg active:scale-95 transition-all"
+                  aria-label="Close modal"
                 >
-                  <img src={img} alt="" className="w-full h-full object-cover" />
+                  <X className="w-5 h-5" />
                 </button>
-              ))}
+              </div>
             </div>
-          )}
+
+            {/* Floating Left & Right Overlay Navigation Arrows */}
+            {property.images.length > 1 && (
+              <>
+                <button
+                  onClick={() => {
+                    setActiveImageIndex((prev) => (prev === 0 ? property.images.length - 1 : prev - 1));
+                  }}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-slate-950/70 hover:bg-slate-900 text-white flex items-center justify-center backdrop-blur-md border border-white/20 active:scale-95 transition-all shadow-xl"
+                  aria-label="Previous image"
+                >
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
+
+                <button
+                  onClick={() => {
+                    setActiveImageIndex((prev) => (prev === property.images.length - 1 ? 0 : prev + 1));
+                  }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-slate-950/70 hover:bg-slate-900 text-white flex items-center justify-center backdrop-blur-md border border-white/20 active:scale-95 transition-all shadow-xl"
+                  aria-label="Next image"
+                >
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+              </>
+            )}
+          </div>
 
           {/* Modal Content Body */}
           <div className="p-4 md:p-8 space-y-5">
-            
-            {/* Title & Location on Mobile (Screen 7 layout) */}
+            {/* Title & Location */}
             <div className="space-y-1">
               <h2 className="text-xl md:text-3xl font-extrabold text-slate-900 dark:text-white">
                 {property.title}
@@ -126,7 +118,7 @@ export default function PropertyDetailsModal({ property, onClose }) {
               </span>
             </div>
 
-            {/* Feature Badges: DTCP Approved, West Facing, Clear Title */}
+            {/* Feature Badges */}
             <div className="flex items-center gap-2 flex-wrap">
               <span className="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-xs font-bold px-3 py-1 rounded-lg border border-slate-200 dark:border-slate-700">
                 🏷️ {property.approval}
@@ -139,7 +131,7 @@ export default function PropertyDetailsModal({ property, onClose }) {
               </span>
             </div>
 
-            {/* Property Highlights Checkmark List (Screen 7 layout) */}
+            {/* Property Highlights */}
             <div className="space-y-2.5 pt-2">
               <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">
                 Property Highlights
@@ -166,14 +158,12 @@ export default function PropertyDetailsModal({ property, onClose }) {
               </p>
             </div>
 
-            {/* Policy Banner */}
             <PolicyBanner />
-
           </div>
         </div>
 
-        {/* Sticky Bottom Action Bar matching Screen 7 */}
-        <div className="p-3 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 sticky bottom-0 z-20 grid grid-cols-2 gap-2">
+        {/* Sticky Bottom Action Bar */}
+        <div className="p-3 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 sticky bottom-0 z-20 grid grid-cols-2 gap-2 shrink-0">
           <button
             onClick={() => {
               onClose();
@@ -182,7 +172,7 @@ export default function PropertyDetailsModal({ property, onClose }) {
             className="bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs py-3 px-4 rounded-xl shadow-md flex items-center justify-center gap-1.5 transition-all"
           >
             <Eye className="w-4 h-4" />
-            <span>View Details</span>
+            <span>Enquire Now</span>
           </button>
 
           <a
@@ -195,7 +185,6 @@ export default function PropertyDetailsModal({ property, onClose }) {
             <span>WhatsApp</span>
           </a>
         </div>
-
       </div>
     </div>
   );

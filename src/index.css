@@ -123,3 +123,13 @@ html.dark .policy-banner {
   transform: translateY(-4px);
   box-shadow: var(--shadow-lg);
 }
+
+/* Hide scrollbar for smooth horizontal sliders */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+

@@ -44,8 +44,8 @@ export default function HomePage() {
   return (
     <div className="pb-16">
       
-      {/* MOBILE VIEW (MATCHES USER SCREENSHOT EXACTLY ON MOBILE) */}
-      <div className="block md:hidden px-4 space-y-4">
+      {/* MOBILE VIEW (COMPACT HEIGHT WITH HORIZONTAL SLIDERS ONLY IN MOBILE VIEW) */}
+      <div className="block md:hidden px-3.5 space-y-3 pt-1 pb-4">
         <MobileHeroAndSearch />
         <MobileServices />
         <MobileListings />
@@ -573,14 +573,6 @@ export default function HomePage() {
       </section>
 
       </div> {/* End DESKTOP VIEW */}
-
-      {/* Property Details Modal Renderer */}
-      {selectedProperty && (
-        <PropertyDetailsModal
-          property={selectedProperty}
-          onClose={() => setSelectedProperty(null)}
-        />
-      )}
 
     </div>
   );

@@ -3,6 +3,7 @@ import { AppProvider, useApp } from './context/AppContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import EnquiryModal from './components/EnquiryModal';
+import PropertyDetailsModal from './components/PropertyDetailsModal';
 import FloatingWhatsApp from './components/FloatingWhatsApp';
 import MobileBottomNav from './components/MobileBottomNav';
 
@@ -16,20 +17,24 @@ import AOS from 'aos';
 import 'aos/dist/aos.css';
 
 function MainRouter() {
-  const { currentRoute } = useApp();
+  const { currentRoute, selectedProperty, setSelectedProperty } = useApp();
 
   useEffect(() => {
     AOS.init({
-      duration: 800,
+      duration: 600,
       easing: 'ease-out-cubic',
       once: false,
       mirror: true,
-      offset: 80
+      offset: 30,
+      disableMutationObserver: false
     });
   }, []);
 
   useEffect(() => {
-    AOS.refresh();
+    const timer = setTimeout(() => {
+      AOS.refresh();
+    }, 100);
+    return () => clearTimeout(timer);
   }, [currentRoute]);
 
   const renderPage = () => {
@@ -59,6 +64,14 @@ function MainRouter() {
       <EnquiryModal />
       <FloatingWhatsApp />
       <MobileBottomNav />
+
+      {/* Global Property Details Modal (Mounted at Root Level to avoid Z-Index / Stacking Context trapping) */}
+      {selectedProperty && (
+        <PropertyDetailsModal
+          property={selectedProperty}
+          onClose={() => setSelectedProperty(null)}
+        />
+      )}
     </div>
   );
 }

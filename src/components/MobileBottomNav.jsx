@@ -1,43 +1,48 @@
 import React from 'react';
 import { useApp } from '../context/AppContext';
-import { Home, Building2, Mail, User } from 'lucide-react';
+import { Home, Building2, Mail, PhoneCall } from 'lucide-react';
 
 export default function MobileBottomNav() {
-  const { currentRoute, navigate, openEnquiry } = useApp();
+  const { currentRoute, navigate, openEnquiry, setSelectedProperty } = useApp();
+
+  const handleAction = (cb) => {
+    if (setSelectedProperty) setSelectedProperty(null);
+    cb();
+  };
 
   const navItems = [
     {
       id: 'home',
       label: 'Home',
       icon: Home,
-      action: () => navigate('/'),
+      action: () => handleAction(() => navigate('/')),
       isActive: currentRoute === '/'
     },
     {
       id: 'properties',
       label: 'Properties',
       icon: Building2,
-      action: () => navigate('/portfolio'),
+      action: () => handleAction(() => navigate('/portfolio')),
       isActive: currentRoute === '/portfolio'
     },
     {
       id: 'enquiry',
       label: 'Enquiry',
       icon: Mail,
-      action: () => openEnquiry(null),
+      action: () => handleAction(() => openEnquiry(null)),
       isActive: false
     },
     {
-      id: 'profile',
-      label: 'Profile',
-      icon: User,
-      action: () => navigate('/contact'),
+      id: 'contact',
+      label: 'Contact Us',
+      icon: PhoneCall,
+      action: () => handleAction(() => navigate('/contact')),
       isActive: currentRoute === '/contact'
     }
   ];
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-2 px-4 shadow-2xl">
+    <div className="md:hidden fixed bottom-0 left-0 right-0 z-[10000] bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-2 px-4 shadow-2xl">
       <div className="flex items-center justify-around max-w-md mx-auto">
         {navItems.map((item) => {
           const Icon = item.icon;
