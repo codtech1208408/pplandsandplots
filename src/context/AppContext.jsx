@@ -436,25 +436,42 @@ export function AppProvider({ children }) {
   };
 
   const deleteEnquiry = async (id, targetItem = null) => {
+    // 1. Remove from local state & localStorage immediately
     setEnquiries(prev => {
       const updated = prev.filter(e => String(e.id) !== String(id));
       localStorage.setItem('pp_enquiries', JSON.stringify(updated));
       return updated;
     });
 
-    try {
-      const { error, count } = await supabase.from('enquiries').delete({ count: 'exact' }).eq('id', id);
+    // 2. Perform deletion in Supabase DB safely
+    const isValidUuid = typeof id === 'string' && /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id);
 
-      if ((error || count === 0) && targetItem) {
-        if (targetItem.phone && targetItem.name) {
-          await supabase.from('enquiries').delete().match({
-            phone: targetItem.phone,
-            name: targetItem.name
-          });
+    try {
+      let isDeleted = false;
+      if (isValidUuid) {
+        const { error, count } = await supabase.from('enquiries').delete({ count: 'exact' }).eq('id', id);
+        if (!error && count > 0) {
+          isDeleted = true;
+        }
+      }
+
+      // If not deleted by UUID (or if id was local prefix), delete by matching phone or name in Supabase
+      if (!isDeleted) {
+        if (targetItem?.phone) {
+          await supabase.from('enquiries').delete().eq('phone', targetItem.phone);
+        } else if (targetItem?.name) {
+          await supabase.from('enquiries').delete().eq('name', targetItem.name);
         }
       }
     } catch (e) {
-      console.error('Supabase error deleting enquiry', e);
+      console.error('Supabase error deleting enquiry:', e);
+      if (targetItem?.phone) {
+        try {
+          await supabase.from('enquiries').delete().eq('phone', targetItem.phone);
+        } catch (err) {
+          // ignore fallback error
+        }
+      }
     }
   };
 
