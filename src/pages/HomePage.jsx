@@ -36,9 +36,11 @@ export default function HomePage() {
     openEnquiry, 
     selectedProperty, 
     setSelectedProperty, 
-    COMPANY_DETAILS 
+    COMPANY_DETAILS,
+    services
   } = useApp();
 
+  const activeServices = services && services.length > 0 ? services : SERVICES_LIST;
   const featuredProperties = properties.filter(p => p.featured || p.status === 'Available').slice(0, 3);
 
   return (
@@ -326,8 +328,8 @@ export default function HomePage() {
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-              {SERVICES_LIST.map((srv, idx) => (
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4">
+              {activeServices.map((srv, idx) => (
                 <div
                   key={srv.id}
                   data-aos="zoom-in-up"

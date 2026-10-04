@@ -3,7 +3,7 @@ import { useApp } from '../../context/AppContext';
 import { Phone, MessageSquare, Mail, MapPin, Send, CheckCircle2 } from 'lucide-react';
 
 export default function MobileContactSection() {
-  const { COMPANY_DETAILS } = useApp();
+  const { COMPANY_DETAILS, submitEnquiry } = useApp();
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -12,9 +12,19 @@ export default function MobileContactSection() {
   });
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name || !formData.phone) return;
+    try {
+      await submitEnquiry({
+        name: formData.name,
+        phone: formData.phone,
+        interestedIn: formData.interestedIn,
+        message: formData.message
+      });
+    } catch (err) {
+      console.error('Error submitting enquiry:', err);
+    }
     setSubmitted(true);
   };
 

@@ -4,7 +4,7 @@ import { X, CheckCircle2, AlertCircle, Loader2, Send, ShieldAlert } from 'lucide
 import PolicyBanner from './PolicyBanner';
 
 export default function EnquiryModal() {
-  const { isEnquiryOpen, closeEnquiry, enquiryProperty, COMPANY_DETAILS } = useApp();
+  const { isEnquiryOpen, closeEnquiry, enquiryProperty, COMPANY_DETAILS, submitEnquiry } = useApp();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -69,17 +69,28 @@ export default function EnquiryModal() {
     return Object.keys(errs).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
 
     setLoading(true);
 
-    // Simulate backend submission API call cleanly
-    setTimeout(() => {
+    try {
+      await submitEnquiry({
+        name: formData.name,
+        phone: formData.phone,
+        email: formData.email,
+        requirement: formData.requirement,
+        message: formData.message,
+        property_id: enquiryProperty ? enquiryProperty.id : null,
+        property_title: enquiryProperty ? enquiryProperty.title : ''
+      });
+    } catch (err) {
+      console.error('Error submitting enquiry:', err);
+    } finally {
       setLoading(false);
       setSubmitted(true);
-    }, 1000);
+    }
   };
 
   return (

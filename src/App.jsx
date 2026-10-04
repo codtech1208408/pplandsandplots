@@ -12,6 +12,7 @@ import AboutPage from './pages/AboutPage';
 import ServicesPage from './pages/ServicesPage';
 import PortfolioPage from './pages/PortfolioPage';
 import ContactPage from './pages/ContactPage';
+import AdminPage from './pages/AdminPage';
 
 import AOS from 'aos';
 import 'aos/dist/aos.css';
@@ -36,6 +37,10 @@ function MainRouter() {
     }, 100);
     return () => clearTimeout(timer);
   }, [currentRoute]);
+
+  if (currentRoute === '/admin') {
+    return <AdminPage />;
+  }
 
   const renderPage = () => {
     switch (currentRoute) {
@@ -65,7 +70,7 @@ function MainRouter() {
       <FloatingWhatsApp />
       <MobileBottomNav />
 
-      {/* Global Property Details Modal (Mounted at Root Level to avoid Z-Index / Stacking Context trapping) */}
+      {/* Global Property Details Modal */}
       {selectedProperty && (
         <PropertyDetailsModal
           property={selectedProperty}

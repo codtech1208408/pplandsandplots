@@ -4,7 +4,7 @@ import PolicyBanner from '../components/PolicyBanner';
 import { Phone, MessageSquare, Mail, MapPin, Send, CheckCircle2, Loader2, ShieldCheck, Clock } from 'lucide-react';
 
 export default function ContactPage() {
-  const { COMPANY_DETAILS } = useApp();
+  const { COMPANY_DETAILS, submitEnquiry } = useApp();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -45,16 +45,26 @@ export default function ContactPage() {
     return Object.keys(errs).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
 
     setLoading(true);
 
-    setTimeout(() => {
+    try {
+      await submitEnquiry({
+        name: formData.name,
+        phone: formData.phone,
+        email: formData.email,
+        requirement: formData.requirement,
+        message: formData.message
+      });
+    } catch (err) {
+      console.error('Error submitting enquiry:', err);
+    } finally {
       setLoading(false);
       setSubmitted(true);
-    }, 900);
+    }
   };
 
   return (

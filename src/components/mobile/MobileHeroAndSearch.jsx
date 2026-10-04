@@ -15,60 +15,29 @@ import {
 } from 'lucide-react';
 
 export default function MobileHeroAndSearch() {
-  const { navigate } = useApp();
+  const { navigate, banners } = useApp();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [activeTab, setActiveTab] = useState('Buy');
   const [selectedType, setSelectedType] = useState('Commercial');
   const [selectedLocation, setSelectedLocation] = useState('');
   const [selectedBudget, setSelectedBudget] = useState('');
 
-  const slides = [
+  const slides = banners && banners.length > 0 ? banners : [
     {
       id: 1,
       badge: 'Shankarpally • Hyderabad - Telangana',
-      badgeIcon: MapPin,
-      badgeIconColor: 'text-red-500',
       title: 'Find the Right Land.',
       highlight: 'Build Your Future.',
       subtitle: 'Trusted Lands & Plots for Smart Buyers and Investors in Telangana.',
       image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1000&q=80'
-    },
-    {
-      id: 2,
-      badge: 'HMDA & DTCP Layout Guidance',
-      badgeIcon: ShieldCheck,
-      badgeIconColor: 'text-amber-400',
-      title: 'Residential Venture Plots',
-      highlight: 'Clear Title Deeds.',
-      subtitle: 'Premium open plots in fast-developing corridors with legal safety.',
-      image: 'https://images.unsplash.com/photo-1592595896551-12b371d546d5?auto=format&fit=crop&w=1000&q=80'
-    },
-    {
-      id: 3,
-      badge: 'High ROI Investment Opportunities',
-      badgeIcon: Sparkles,
-      badgeIconColor: 'text-rose-400',
-      title: 'Commercial & Highway Lands',
-      highlight: 'Prime Business Zones.',
-      subtitle: 'Strategic commercial land parcels suited for long-term wealth growth.',
-      image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1000&q=80'
-    },
-    {
-      id: 4,
-      badge: 'Agricultural & Farm Lands',
-      badgeIcon: Sprout,
-      badgeIconColor: 'text-emerald-400',
-      title: 'Agricultural Land Holdings',
-      highlight: 'Secure Farm Ownership.',
-      subtitle: 'Fertile agricultural land options in high potential Telangana locations.',
-      image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1000&q=80'
     }
   ];
 
   useEffect(() => {
+    if (slides.length <= 1) return;
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 3000);
+    }, 3500);
     return () => clearInterval(timer);
   }, [slides.length]);
 
@@ -83,8 +52,7 @@ export default function MobileHeroAndSearch() {
     navigate('/portfolio');
   };
 
-  const activeSlideData = slides[currentSlide];
-  const BadgeIcon = activeSlideData.badgeIcon;
+  const activeSlideData = slides[currentSlide] || slides[0];
 
   return (
     <div className="md:hidden space-y-4 pb-2">

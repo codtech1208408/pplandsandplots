@@ -319,3 +319,43 @@ export const COMPANY_VALUES = [
     description: "Disciplined offline and online operations established in Shankarpally since 2023."
   }
 ];
+
+export const INITIAL_BANNERS = [
+  {
+    id: "banner-1",
+    title: "Find the Right Land.",
+    highlight: "Build Your Future.",
+    subtitle: "Trusted Lands & Plots for Smart Buyers and Investors in Telangana.",
+    badge: "Shankarpally • Hyderabad - Telangana",
+    image: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1000&q=80",
+    active: true
+  },
+  {
+    id: "banner-2",
+    title: "Residential Venture Plots",
+    highlight: "Clear Title Deeds.",
+    subtitle: "Premium open plots in fast-developing corridors with legal safety.",
+    badge: "HMDA & DTCP Layout Guidance",
+    image: "https://images.unsplash.com/photo-1592595896551-12b371d546d5?auto=format&fit=crop&w=1000&q=80",
+    active: true
+  },
+  {
+    id: "banner-3",
+    title: "Commercial & Highway Lands",
+    highlight: "Prime Business Zones.",
+    subtitle: "Strategic commercial land parcels suited for long-term wealth growth.",
+    badge: "High ROI Investment Opportunities",
+    image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1000&q=80",
+    active: true
+  },
+  {
+    id: "banner-4",
+    title: "Agricultural Land Holdings",
+    highlight: "Secure Farm Ownership.",
+    subtitle: "Fertile agricultural land options in high potential Telangana locations.",
+    badge: "Agricultural & Farm Lands",
+    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1000&q=80",
+    active: true
+  }
+];
+

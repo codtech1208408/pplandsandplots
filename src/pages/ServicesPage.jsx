@@ -5,7 +5,8 @@ import { SERVICES_LIST } from '../data/properties';
 import { Landmark, Layout, Home, TrendingUp, PieChart, ArrowRight, CheckCircle2, Phone, MessageSquare } from 'lucide-react';
 
 export default function ServicesPage() {
-  const { openEnquiry, COMPANY_DETAILS, navigate } = useApp();
+  const { openEnquiry, COMPANY_DETAILS, navigate, services } = useApp();
+  const activeServices = services && services.length > 0 ? services : SERVICES_LIST;
 
   const getServiceIcon = (iconName) => {
     switch (iconName) {
@@ -42,7 +43,7 @@ export default function ServicesPage() {
 
       {/* Services Breakdown List */}
       <div className="space-y-8">
-        {SERVICES_LIST.map((service, index) => (
+        {activeServices.map((service, index) => (
           <div
             key={service.id}
             data-aos="fade-up"
