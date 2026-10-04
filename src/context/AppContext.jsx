@@ -396,8 +396,7 @@ export function AppProvider({ children }) {
 
   // ENQUIRIES: Add lead, Update status, Delete lead
   const submitEnquiry = async (enquiryData) => {
-    const newEnquiry = {
-      id: `enq-${Date.now()}`,
+    const payload = {
       name: enquiryData.name,
       phone: enquiryData.phone,
       email: enquiryData.email || '',
@@ -405,32 +404,55 @@ export function AppProvider({ children }) {
       property_id: enquiryData.property_id || enquiryData.propertyId || null,
       property_title: enquiryData.property_title || enquiryData.propertyTitle || '',
       message: enquiryData.message || '',
-      status: 'New',
-      created_at: new Date().toISOString()
+      status: 'New'
     };
 
-    setEnquiries(prev => [newEnquiry, ...prev]);
-
     try {
-      await supabase.from('enquiries').insert([{
-        name: newEnquiry.name,
-        phone: newEnquiry.phone,
-        email: newEnquiry.email,
-        service_type: newEnquiry.service_type,
-        property_id: newEnquiry.property_id,
-        property_title: newEnquiry.property_title,
-        message: newEnquiry.message,
-        status: 'New'
-      }]);
+      const { data, error } = await supabase.from('enquiries').insert([payload]).select().single();
+      const newEnquiry = (!error && data) ? data : {
+        id: `enq-${Date.now()}`,
+        ...payload,
+        created_at: new Date().toISOString()
+      };
+
+      setEnquiries(prev => {
+        const updated = [newEnquiry, ...prev.filter(e => String(e.id) !== String(newEnquiry.id))];
+        localStorage.setItem('pp_enquiries', JSON.stringify(updated));
+        return updated;
+      });
     } catch (e) {
       console.error('Supabase error submitting enquiry', e);
+      const fallbackEnquiry = {
+        id: `enq-${Date.now()}`,
+        ...payload,
+        created_at: new Date().toISOString()
+      };
+      setEnquiries(prev => {
+        const updated = [fallbackEnquiry, ...prev];
+        localStorage.setItem('pp_enquiries', JSON.stringify(updated));
+        return updated;
+      });
     }
   };
 
-  const deleteEnquiry = async (id) => {
-    setEnquiries(prev => prev.filter(e => e.id !== id));
+  const deleteEnquiry = async (id, targetItem = null) => {
+    setEnquiries(prev => {
+      const updated = prev.filter(e => String(e.id) !== String(id));
+      localStorage.setItem('pp_enquiries', JSON.stringify(updated));
+      return updated;
+    });
+
     try {
-      await supabase.from('enquiries').delete().eq('id', id);
+      const { error, count } = await supabase.from('enquiries').delete({ count: 'exact' }).eq('id', id);
+
+      if ((error || count === 0) && targetItem) {
+        if (targetItem.phone && targetItem.name) {
+          await supabase.from('enquiries').delete().match({
+            phone: targetItem.phone,
+            name: targetItem.name
+          });
+        }
+      }
     } catch (e) {
       console.error('Supabase error deleting enquiry', e);
     }

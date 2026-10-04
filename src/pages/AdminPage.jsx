@@ -884,7 +884,7 @@ export default function AdminPage() {
                         <button
                           onClick={() => {
                             if (confirm(`Delete enquiry from ${enq.name}?`)) {
-                              deleteEnquiry(enq.id);
+                              deleteEnquiry(enq.id, enq);
                             }
                           }}
                           className="text-slate-500 hover:text-red-400 p-1"
