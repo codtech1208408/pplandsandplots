@@ -17,6 +17,16 @@ export function AppProvider({ children }) {
     return localStorage.getItem('pp_admin_auth') === 'true';
   });
 
+  // Enquiries / Leads Blacklist State (Prevents deleted leads from reappearing)
+  const [deletedEnquiries, setDeletedEnquiries] = useState(() => {
+    try {
+      const saved = localStorage.getItem('pp_deleted_enquiries');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+
   // Dynamic Properties State (100% Supabase Source of Truth)
   const [properties, setProperties] = useState([]);
 
@@ -106,7 +116,14 @@ export function AppProvider({ children }) {
         .order('created_at', { ascending: false });
       
       if (!enqErr && enqData) {
-        setEnquiries(enqData);
+        const savedDeleted = JSON.parse(localStorage.getItem('pp_deleted_enquiries') || '[]');
+        const filteredEnquiries = enqData.filter(item => {
+          const isIdDel = item.id && savedDeleted.includes(String(item.id));
+          const isPhoneDel = item.phone && savedDeleted.includes(String(item.phone));
+          const isNameDel = item.name && savedDeleted.includes(String(item.name));
+          return !isIdDel && !isPhoneDel && !isNameDel;
+        });
+        setEnquiries(filteredEnquiries);
       }
     } catch (err) {
       console.error('Supabase fetch error:', err);
@@ -348,15 +365,29 @@ export function AppProvider({ children }) {
   };
 
   const deleteEnquiry = async (id, targetItem = null) => {
+    const idStr = String(id);
+    const phoneStr = targetItem?.phone || '';
+    const nameStr = targetItem?.name || '';
+
+    // 1. Add identifiers to deleted blacklist
+    setDeletedEnquiries(prev => {
+      const updated = Array.from(new Set([...prev, idStr, phoneStr, nameStr].filter(Boolean)));
+      localStorage.setItem('pp_deleted_enquiries', JSON.stringify(updated));
+      return updated;
+    });
+
+    // 2. Remove from state immediately
+    setEnquiries(prev => prev.filter(e => 
+      String(e.id) !== idStr &&
+      (!phoneStr || e.phone !== phoneStr) &&
+      (!nameStr || e.name !== nameStr)
+    ));
+
+    // 3. Perform deletion in Supabase DB
     try {
-      const isValidUuid = typeof id === 'string' && /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id);
-      if (isValidUuid) {
-        await supabase.from('enquiries').delete().eq('id', id);
-      } else if (targetItem?.phone) {
-        await supabase.from('enquiries').delete().eq('phone', targetItem.phone);
-      } else if (targetItem?.name) {
-        await supabase.from('enquiries').delete().eq('name', targetItem.name);
-      }
+      if (idStr) await supabase.from('enquiries').delete().eq('id', idStr);
+      if (phoneStr) await supabase.from('enquiries').delete().eq('phone', phoneStr);
+      if (nameStr) await supabase.from('enquiries').delete().eq('name', nameStr);
       await fetchSupabaseData();
     } catch (e) {
       console.error('Supabase error deleting enquiry:', e);
