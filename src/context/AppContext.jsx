@@ -106,41 +106,119 @@ export function AppProvider({ children }) {
   useEffect(() => {
     async function fetchSupabaseData() {
       try {
-        // Fetch properties
+        // 1. Fetch properties
         const { data: propsData, error: propsErr } = await supabase.from('properties').select('*');
-        if (!propsErr && propsData && propsData.length > 0) {
-          const formatted = propsData.map(p => ({
-            ...p,
-            categorySlug: p.category_slug || p.categorySlug,
-            created_at: p.created_at,
-            updated_at: p.updated_at
-          }));
-          setProperties(formatted);
-          localStorage.setItem('pp_properties', JSON.stringify(formatted));
+        const localProps = (() => {
+          try { return JSON.parse(localStorage.getItem('pp_properties') || '[]'); } catch(e) { return []; }
+        })();
+
+        let finalProps = propsData ? propsData.map(p => ({
+          ...p,
+          categorySlug: p.category_slug || p.categorySlug,
+          created_at: p.created_at,
+          updated_at: p.updated_at
+        })) : [];
+
+        if (localProps.length > 0) {
+          const supabasePropIds = new Set(finalProps.map(p => p.id));
+          const unsyncedProps = localProps.filter(p => !supabasePropIds.has(p.id));
+
+          for (const p of unsyncedProps) {
+            try {
+              await supabase.from('properties').upsert([{
+                id: p.id,
+                title: p.title,
+                slug: p.slug || (p.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+                category: p.category,
+                category_slug: p.categorySlug || (p.category || '').toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+                location: p.location,
+                size: p.size,
+                price: p.price,
+                approval: p.approval,
+                status: p.status,
+                featured: p.featured,
+                description: p.description,
+                images: p.images,
+                features: p.features
+              }], { onConflict: 'id' });
+            } catch (e) {
+              console.warn('Syncing property to Supabase notice:', e);
+            }
+          }
+          finalProps = [...unsyncedProps, ...finalProps];
         }
 
-        // Fetch services
+        if (finalProps.length > 0) {
+          setProperties(finalProps);
+          localStorage.setItem('pp_properties', JSON.stringify(finalProps));
+        }
+
+        // 2. Fetch services
         const { data: srvData, error: srvErr } = await supabase.from('services').select('*');
-        if (!srvErr && srvData && srvData.length > 0) {
-          const formattedSrv = srvData.map(s => ({
-            id: s.id,
-            name: s.name,
-            shortDesc: s.short_desc || s.shortDesc,
-            fullDesc: s.full_desc || s.fullDesc,
-            icon: s.icon || 'MapPin'
-          }));
-          setServices(formattedSrv);
-          localStorage.setItem('pp_services', JSON.stringify(formattedSrv));
+        const localServices = (() => {
+          try { return JSON.parse(localStorage.getItem('pp_services') || '[]'); } catch(e) { return []; }
+        })();
+
+        let finalServices = srvData ? srvData.map(s => ({
+          id: s.id,
+          name: s.name,
+          shortDesc: s.short_desc || s.shortDesc,
+          fullDesc: s.full_desc || s.fullDesc,
+          icon: s.icon || 'MapPin'
+        })) : [];
+
+        if (localServices.length > 0) {
+          const supabaseSrvIds = new Set(finalServices.map(s => s.id));
+          const unsyncedServices = localServices.filter(s => !supabaseSrvIds.has(s.id));
+
+          for (const s of unsyncedServices) {
+            try {
+              await supabase.from('services').upsert([{
+                id: s.id,
+                name: s.name,
+                short_desc: s.shortDesc || s.short_desc,
+                full_desc: s.fullDesc || s.full_desc,
+                icon: s.icon
+              }], { onConflict: 'id' });
+            } catch (e) {
+              console.warn('Syncing service to Supabase notice:', e);
+            }
+          }
+          finalServices = [...unsyncedServices, ...finalServices];
         }
 
-        // Fetch banners
+        if (finalServices.length > 0) {
+          setServices(finalServices);
+          localStorage.setItem('pp_services', JSON.stringify(finalServices));
+        }
+
+        // 3. Fetch banners
         const { data: bnrData, error: bnrErr } = await supabase.from('banners').select('*');
-        if (!bnrErr && bnrData && bnrData.length > 0) {
-          setBanners(bnrData);
-          localStorage.setItem('pp_banners', JSON.stringify(bnrData));
+        const localBanners = (() => {
+          try { return JSON.parse(localStorage.getItem('pp_banners') || '[]'); } catch(e) { return []; }
+        })();
+
+        let finalBanners = bnrData || [];
+        if (localBanners.length > 0) {
+          const supabaseBnrIds = new Set((bnrData || []).map(b => b.id));
+          const unsyncedBanners = localBanners.filter(b => !supabaseBnrIds.has(b.id));
+
+          for (const b of unsyncedBanners) {
+            try {
+              await supabase.from('banners').upsert([b], { onConflict: 'id' });
+            } catch (e) {
+              console.warn('Syncing banner to Supabase notice:', e);
+            }
+          }
+          finalBanners = [...unsyncedBanners, ...(bnrData || [])];
         }
 
-        // Fetch enquiries
+        if (finalBanners.length > 0) {
+          setBanners(finalBanners);
+          localStorage.setItem('pp_banners', JSON.stringify(finalBanners));
+        }
+
+        // 4. Fetch enquiries
         const { data: enqData, error: enqErr } = await supabase.from('enquiries').select('*').order('created_at', { ascending: false });
         if (!enqErr && enqData) {
           const savedDeleted = JSON.parse(localStorage.getItem('pp_deleted_enquiries') || '[]');
@@ -251,27 +329,36 @@ export function AppProvider({ children }) {
     const newService = {
       id: serviceData.id || `service-${Date.now()}`,
       name: serviceData.name,
-      shortDesc: serviceData.shortDesc,
-      fullDesc: serviceData.fullDesc,
+      shortDesc: serviceData.shortDesc || '',
+      fullDesc: serviceData.fullDesc || '',
       icon: serviceData.icon || 'MapPin'
     };
-    setServices(prev => [newService, ...prev]);
+
+    setServices(prev => {
+      const updated = [newService, ...prev.filter(s => s.id !== newService.id)];
+      localStorage.setItem('pp_services', JSON.stringify(updated));
+      return updated;
+    });
 
     try {
-      await supabase.from('services').insert([{
+      await supabase.from('services').upsert([{
         id: newService.id,
         name: newService.name,
         short_desc: newService.shortDesc,
         full_desc: newService.fullDesc,
         icon: newService.icon
-      }]);
+      }], { onConflict: 'id' });
     } catch (e) {
       console.error('Supabase error saving service', e);
     }
   };
 
   const updateService = async (id, updatedFields) => {
-    setServices(prev => prev.map(s => s.id === id ? { ...s, ...updatedFields } : s));
+    setServices(prev => {
+      const updated = prev.map(s => s.id === id ? { ...s, ...updatedFields } : s);
+      localStorage.setItem('pp_services', JSON.stringify(updated));
+      return updated;
+    });
 
     try {
       await supabase.from('services').update({
@@ -286,7 +373,11 @@ export function AppProvider({ children }) {
   };
 
   const deleteService = async (id) => {
-    setServices(prev => prev.filter(s => s.id !== id));
+    setServices(prev => {
+      const updated = prev.filter(s => s.id !== id);
+      localStorage.setItem('pp_services', JSON.stringify(updated));
+      return updated;
+    });
 
     try {
       await supabase.from('services').delete().eq('id', id);
@@ -315,10 +406,14 @@ export function AppProvider({ children }) {
       created_at: new Date().toISOString().split('T')[0]
     };
 
-    setProperties(prev => [newProp, ...prev]);
+    setProperties(prev => {
+      const updated = [newProp, ...prev.filter(p => p.id !== newProp.id)];
+      localStorage.setItem('pp_properties', JSON.stringify(updated));
+      return updated;
+    });
 
     try {
-      await supabase.from('properties').insert([{
+      await supabase.from('properties').upsert([{
         id: newProp.id,
         title: newProp.title,
         slug: newProp.slug,
@@ -333,14 +428,18 @@ export function AppProvider({ children }) {
         description: newProp.description,
         images: newProp.images,
         features: newProp.features
-      }]);
+      }], { onConflict: 'id' });
     } catch (e) {
       console.error('Supabase error adding property', e);
     }
   };
 
   const updateProperty = async (id, updatedFields) => {
-    setProperties(prev => prev.map(p => p.id === id ? { ...p, ...updatedFields } : p));
+    setProperties(prev => {
+      const updated = prev.map(p => p.id === id ? { ...p, ...updatedFields } : p);
+      localStorage.setItem('pp_properties', JSON.stringify(updated));
+      return updated;
+    });
 
     try {
       const dbPayload = {};
@@ -366,7 +465,11 @@ export function AppProvider({ children }) {
   };
 
   const deleteProperty = async (id) => {
-    setProperties(prev => prev.filter(p => p.id !== id));
+    setProperties(prev => {
+      const updated = prev.filter(p => p.id !== id);
+      localStorage.setItem('pp_properties', JSON.stringify(updated));
+      return updated;
+    });
 
     try {
       await supabase.from('properties').delete().eq('id', id);
@@ -387,17 +490,26 @@ export function AppProvider({ children }) {
       active: bannerData.active !== undefined ? bannerData.active : true
     };
 
-    setBanners(prev => [newBanner, ...prev]);
+    setBanners(prev => {
+      const updated = [newBanner, ...prev.filter(b => b.id !== newBanner.id)];
+      localStorage.setItem('pp_banners', JSON.stringify(updated));
+      return updated;
+    });
 
     try {
-      await supabase.from('banners').insert([newBanner]);
+      const { error } = await supabase.from('banners').upsert([newBanner], { onConflict: 'id' });
+      if (error) console.error('Supabase banner upsert error:', error);
     } catch (e) {
       console.error('Supabase error adding banner', e);
     }
   };
 
   const updateBanner = async (id, updatedFields) => {
-    setBanners(prev => prev.map(b => b.id === id ? { ...b, ...updatedFields } : b));
+    setBanners(prev => {
+      const updated = prev.map(b => b.id === id ? { ...b, ...updatedFields } : b);
+      localStorage.setItem('pp_banners', JSON.stringify(updated));
+      return updated;
+    });
 
     try {
       await supabase.from('banners').update(updatedFields).eq('id', id);
@@ -407,7 +519,11 @@ export function AppProvider({ children }) {
   };
 
   const deleteBanner = async (id) => {
-    setBanners(prev => prev.filter(b => b.id !== id));
+    setBanners(prev => {
+      const updated = prev.filter(b => b.id !== id);
+      localStorage.setItem('pp_banners', JSON.stringify(updated));
+      return updated;
+    });
 
     try {
       await supabase.from('banners').delete().eq('id', id);
