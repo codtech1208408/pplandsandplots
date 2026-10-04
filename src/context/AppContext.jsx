@@ -57,11 +57,26 @@ export function AppProvider({ children }) {
   });
 
   // Enquiries / Leads State
+  const [deletedEnquiries, setDeletedEnquiries] = useState(() => {
+    try {
+      const saved = localStorage.getItem('pp_deleted_enquiries');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+
   const [enquiries, setEnquiries] = useState(() => {
     const savedEnquiries = localStorage.getItem('pp_enquiries');
     if (savedEnquiries) {
       try {
-        return JSON.parse(savedEnquiries);
+        const parsed = JSON.parse(savedEnquiries);
+        return parsed.filter(item => {
+          const isIdDel = item.id && deletedEnquiries.includes(String(item.id));
+          const isPhoneDel = item.phone && deletedEnquiries.includes(String(item.phone));
+          const isNameDel = item.name && deletedEnquiries.includes(String(item.name));
+          return !isIdDel && !isPhoneDel && !isNameDel;
+        });
       } catch (e) {
         console.error('Failed to parse saved enquiries', e);
       }
@@ -128,8 +143,15 @@ export function AppProvider({ children }) {
         // Fetch enquiries
         const { data: enqData, error: enqErr } = await supabase.from('enquiries').select('*').order('created_at', { ascending: false });
         if (!enqErr && enqData) {
-          setEnquiries(enqData);
-          localStorage.setItem('pp_enquiries', JSON.stringify(enqData));
+          const savedDeleted = JSON.parse(localStorage.getItem('pp_deleted_enquiries') || '[]');
+          const filteredEnquiries = enqData.filter(item => {
+            const isIdDel = item.id && savedDeleted.includes(String(item.id));
+            const isPhoneDel = item.phone && savedDeleted.includes(String(item.phone));
+            const isNameDel = item.name && savedDeleted.includes(String(item.name));
+            return !isIdDel && !isPhoneDel && !isNameDel;
+          });
+          setEnquiries(filteredEnquiries);
+          localStorage.setItem('pp_enquiries', JSON.stringify(filteredEnquiries));
         }
       } catch (err) {
         console.log('Supabase sync notice: using stored local state.', err);
@@ -436,14 +458,29 @@ export function AppProvider({ children }) {
   };
 
   const deleteEnquiry = async (id, targetItem = null) => {
-    // 1. Remove from local state & localStorage immediately
+    const idStr = String(id);
+    const phoneStr = targetItem?.phone || '';
+    const nameStr = targetItem?.name || '';
+
+    // 1. Save identifiers to persistent deleted blacklist
+    setDeletedEnquiries(prev => {
+      const updated = Array.from(new Set([...prev, idStr, phoneStr, nameStr].filter(Boolean)));
+      localStorage.setItem('pp_deleted_enquiries', JSON.stringify(updated));
+      return updated;
+    });
+
+    // 2. Remove from local state & localStorage immediately
     setEnquiries(prev => {
-      const updated = prev.filter(e => String(e.id) !== String(id));
+      const updated = prev.filter(e => 
+        String(e.id) !== idStr &&
+        (!phoneStr || e.phone !== phoneStr) &&
+        (!nameStr || e.name !== nameStr)
+      );
       localStorage.setItem('pp_enquiries', JSON.stringify(updated));
       return updated;
     });
 
-    // 2. Perform deletion in Supabase DB safely
+    // 3. Perform deletion in Supabase DB safely
     const isValidUuid = typeof id === 'string' && /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id);
 
     try {
@@ -455,19 +492,20 @@ export function AppProvider({ children }) {
         }
       }
 
-      // If not deleted by UUID (or if id was local prefix), delete by matching phone or name in Supabase
+      // If not deleted by UUID, delete by matching phone or name in Supabase
       if (!isDeleted) {
-        if (targetItem?.phone) {
-          await supabase.from('enquiries').delete().eq('phone', targetItem.phone);
-        } else if (targetItem?.name) {
-          await supabase.from('enquiries').delete().eq('name', targetItem.name);
+        if (phoneStr) {
+          await supabase.from('enquiries').delete().eq('phone', phoneStr);
+        }
+        if (nameStr) {
+          await supabase.from('enquiries').delete().eq('name', nameStr);
         }
       }
     } catch (e) {
       console.error('Supabase error deleting enquiry:', e);
-      if (targetItem?.phone) {
+      if (phoneStr) {
         try {
-          await supabase.from('enquiries').delete().eq('phone', targetItem.phone);
+          await supabase.from('enquiries').delete().eq('phone', phoneStr);
         } catch (err) {
           // ignore fallback error
         }
