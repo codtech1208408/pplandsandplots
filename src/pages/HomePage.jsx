@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import PropertyCard from '../components/PropertyCard';
 import PropertyDetailsModal from '../components/PropertyDetailsModal';
@@ -14,7 +14,8 @@ import {
   PROPERTY_CATEGORIES, 
   APPROVAL_TYPES, 
   SERVICES_LIST, 
-  COMPANY_VALUES 
+  COMPANY_VALUES,
+  INITIAL_BANNERS 
 } from '../data/properties';
 import { 
   ArrowRight, 
@@ -26,7 +27,9 @@ import {
   Sparkles, 
   Landmark, 
   Eye,
-  Compass
+  Compass,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 export default function HomePage() {
@@ -37,11 +40,26 @@ export default function HomePage() {
     selectedProperty, 
     setSelectedProperty, 
     COMPANY_DETAILS,
-    services
+    services,
+    banners
   } = useApp();
 
   const activeServices = services && services.length > 0 ? services : SERVICES_LIST;
   const featuredProperties = properties.filter(p => p.featured || p.status === 'Available').slice(0, 3);
+
+  // Desktop Banner Carousel state
+  const heroBanners = banners && banners.length > 0 ? banners.filter(b => b.active !== false) : INITIAL_BANNERS;
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+
+  useEffect(() => {
+    if (!heroBanners || heroBanners.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentSlideIndex(prev => (prev + 1) % heroBanners.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [heroBanners.length]);
+
+  const activeBanner = heroBanners[currentSlideIndex % heroBanners.length] || heroBanners[0];
 
   return (
     <div className="pb-16">
@@ -57,127 +75,151 @@ export default function HomePage() {
         <MobileContactSection />
       </div>
 
-      {/* DESKTOP VIEW (100% UNCHANGED FOR DESKTOP SCREENS) */}
+      {/* DESKTOP VIEW */}
       <div className="hidden md:block space-y-16 md:space-y-24">
         
-        {/* 1. HERO SECTION */}
-      <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden bg-slate-950 text-white rounded-b-3xl md:rounded-b-[2.5rem] shadow-2xl">
-        
-        {/* Background Image with Deep Overlay */}
-        <div className="absolute inset-0 z-0">
-          <img
-            src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=2000&q=85"
-            alt="Land and plots in Shankarpally Hyderabad"
-            className="w-full h-full object-cover object-center opacity-35 scale-105"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/75 to-slate-950/40" />
-        </div>
-
-        {/* Hero Content */}
-        <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center space-y-8">
+        {/* 1. HERO SECTION WITH DYNAMIC BANNERS CAROUSEL */}
+        <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden bg-slate-950 text-white rounded-b-3xl md:rounded-b-[2.5rem] shadow-2xl group">
           
-          {/* Established Tag */}
-          <div 
-            data-aos="zoom-in" 
-            data-aos-duration="600"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs sm:text-sm font-bold uppercase tracking-wider backdrop-blur-md"
-          >
-            <Sparkles className="w-4 h-4 text-amber-400" />
-            <span>Offline Established Real Estate Enterprise • 2023</span>
+          {/* Background Image with Dynamic Fade & Overlay */}
+          <div className="absolute inset-0 z-0">
+            <img
+              key={activeBanner.id || activeBanner.image}
+              src={activeBanner.image || "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=2000&q=85"}
+              alt={activeBanner.title || "Land and plots in Shankarpally Hyderabad"}
+              className="w-full h-full object-cover object-center opacity-40 transition-all duration-700 ease-in-out scale-105"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/75 to-slate-950/40" />
           </div>
 
-          {/* Headline */}
-          <h1 
-            data-aos="fade-up" 
-            data-aos-duration="800"
-            className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.1] text-white"
-          >
-            Find the Right Land. <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 via-rose-400 to-amber-400">
-              Build Your Future.
-            </span>
-          </h1>
-
-          {/* Supporting Description */}
-          <p 
-            data-aos="fade-up" 
-            data-aos-delay="150"
-            data-aos-duration="800"
-            className="text-lg sm:text-xl text-slate-300 max-w-3xl mx-auto font-medium leading-relaxed"
-          >
-            Trusted land and plot solutions for families, buyers, sellers and investors across Telangana. Based in Shankarpally, Hyderabad.
-          </p>
-
-          {/* CTA Buttons */}
-          <div 
-            data-aos="fade-up" 
-            data-aos-delay="300"
-            className="flex flex-wrap items-center justify-center gap-4 pt-4"
-          >
-            <button
-              onClick={() => navigate('/portfolio')}
-              className="bg-rose-600 hover:bg-rose-700 text-white font-extrabold px-8 py-4 rounded-2xl shadow-lg hover:shadow-rose-900/40 transition-all transform hover:-translate-y-0.5 active:translate-y-0 text-base flex items-center gap-2"
+          {/* Hero Content */}
+          <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center space-y-8">
+            
+            {/* Dynamic Badge Tag */}
+            <div 
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs sm:text-sm font-bold uppercase tracking-wider backdrop-blur-md"
             >
-              <span>Explore Properties</span>
-              <ArrowRight className="w-5 h-5" />
-            </button>
+              <Sparkles className="w-4 h-4 text-amber-400" />
+              <span>{activeBanner.badge || 'Offline Established Real Estate Enterprise • 2023'}</span>
+            </div>
 
-            <button
-              onClick={() => navigate('/contact')}
-              className="bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 font-bold px-8 py-4 rounded-2xl shadow-md transition-all hover:-translate-y-0.5 text-base"
-            >
-              Contact Us
-            </button>
+            {/* Headline */}
+            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.1] text-white">
+              {activeBanner.title || 'Find the Right Land.'} <br />
+              {activeBanner.highlight && (
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 via-rose-400 to-amber-400">
+                  {activeBanner.highlight}
+                </span>
+              )}
+            </h1>
 
-            <a
-              href={COMPANY_DETAILS.contact.whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 font-bold px-6 py-4 rounded-2xl backdrop-blur-md transition-all text-base flex items-center gap-2"
+            {/* Supporting Subtitle */}
+            <p className="text-lg sm:text-xl text-slate-300 max-w-3xl mx-auto font-medium leading-relaxed">
+              {activeBanner.subtitle || 'Trusted land and plot solutions for families, buyers, sellers and investors across Telangana. Based in Shankarpally, Hyderabad.'}
+            </p>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
+              <button
+                onClick={() => navigate('/portfolio')}
+                className="bg-rose-600 hover:bg-rose-700 text-white font-extrabold px-8 py-4 rounded-2xl shadow-lg hover:shadow-rose-900/40 transition-all transform hover:-translate-y-0.5 active:translate-y-0 text-base flex items-center gap-2"
+              >
+                <span>Explore Properties</span>
+                <ArrowRight className="w-5 h-5" />
+              </button>
+
+              <button
+                onClick={() => navigate('/contact')}
+                className="bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 font-bold px-8 py-4 rounded-2xl shadow-md transition-all hover:-translate-y-0.5 text-base"
+              >
+                Contact Us
+              </button>
+
+              <a
+                href={COMPANY_DETAILS.contact.whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 font-bold px-6 py-4 rounded-2xl backdrop-blur-md transition-all text-base flex items-center gap-2"
+              >
+                <MessageSquare className="w-5 h-5 fill-current" />
+                <span>WhatsApp Us</span>
+              </a>
+            </div>
+
+            {/* Slide Navigation Controls & Indicators */}
+            {heroBanners.length > 1 && (
+              <div className="pt-8 flex items-center justify-center gap-3 z-20">
+                <button 
+                  onClick={() => setCurrentSlideIndex(prev => (prev - 1 + heroBanners.length) % heroBanners.length)}
+                  className="p-2 rounded-full bg-slate-900/80 hover:bg-rose-600 text-slate-300 hover:text-white border border-slate-700/80 transition-all"
+                  aria-label="Previous Slide"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+
+                <div className="flex items-center gap-2">
+                  {heroBanners.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setCurrentSlideIndex(idx)}
+                      className={`h-2.5 rounded-full transition-all duration-300 ${
+                        idx === currentSlideIndex % heroBanners.length
+                          ? 'w-8 bg-rose-500'
+                          : 'w-2.5 bg-slate-700 hover:bg-slate-500'
+                      }`}
+                      aria-label={`Go to slide ${idx + 1}`}
+                    />
+                  ))}
+                </div>
+
+                <button 
+                  onClick={() => setCurrentSlideIndex(prev => (prev + 1) % heroBanners.length)}
+                  className="p-2 rounded-full bg-slate-900/80 hover:bg-rose-600 text-slate-300 hover:text-white border border-slate-700/80 transition-all"
+                  aria-label="Next Slide"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+            )}
+
+            {/* Key Trust Pillars Bar */}
+            <div 
+              data-aos="fade-up" 
+              data-aos-delay="400"
+              className="pt-10 grid grid-cols-2 md:grid-cols-4 gap-4 text-left max-w-4xl mx-auto border-t border-slate-800/80"
             >
-              <MessageSquare className="w-5 h-5 fill-current" />
-              <span>WhatsApp Us</span>
-            </a>
+              <div>
+                <span className="text-xs text-slate-400 block font-semibold uppercase">Location</span>
+                <span className="text-sm font-bold text-white flex items-center gap-1.5 mt-0.5">
+                  <MapPin className="w-4 h-4 text-rose-400" />
+                  Shankarpally, Hyd
+                </span>
+              </div>
+              <div>
+                <span className="text-xs text-slate-400 block font-semibold uppercase">Core Focus</span>
+                <span className="text-sm font-bold text-white flex items-center gap-1.5 mt-0.5">
+                  <Landmark className="w-4 h-4 text-amber-400" />
+                  Land & Plot Sales
+                </span>
+              </div>
+              <div>
+                <span className="text-xs text-slate-400 block font-semibold uppercase">Est. Year</span>
+                <span className="text-sm font-bold text-white flex items-center gap-1.5 mt-0.5">
+                  <ShieldCheck className="w-4 h-4 text-rose-400" />
+                  2023 (Offline)
+                </span>
+              </div>
+              <div>
+                <span className="text-xs text-slate-400 block font-semibold uppercase">Trust Standard</span>
+                <span className="text-sm font-bold text-white flex items-center gap-1.5 mt-0.5">
+                  <CheckCircle2 className="w-4 h-4 text-amber-400" />
+                  Transparent Titles
+                </span>
+              </div>
+            </div>
+
           </div>
-
-          {/* Key Trust Pillars Bar */}
-          <div 
-            data-aos="fade-up" 
-            data-aos-delay="400"
-            className="pt-10 grid grid-cols-2 md:grid-cols-4 gap-4 text-left max-w-4xl mx-auto border-t border-slate-800/80"
-          >
-            <div>
-              <span className="text-xs text-slate-400 block font-semibold uppercase">Location</span>
-              <span className="text-sm font-bold text-white flex items-center gap-1.5 mt-0.5">
-                <MapPin className="w-4 h-4 text-rose-400" />
-                Shankarpally, Hyd
-              </span>
-            </div>
-            <div>
-              <span className="text-xs text-slate-400 block font-semibold uppercase">Core Focus</span>
-              <span className="text-sm font-bold text-white flex items-center gap-1.5 mt-0.5">
-                <Landmark className="w-4 h-4 text-amber-400" />
-                Land & Plot Sales
-              </span>
-            </div>
-            <div>
-              <span className="text-xs text-slate-400 block font-semibold uppercase">Est. Year</span>
-              <span className="text-sm font-bold text-white flex items-center gap-1.5 mt-0.5">
-                <ShieldCheck className="w-4 h-4 text-rose-400" />
-                2023 (Offline)
-              </span>
-            </div>
-            <div>
-              <span className="text-xs text-slate-400 block font-semibold uppercase">Trust Standard</span>
-              <span className="text-sm font-bold text-white flex items-center gap-1.5 mt-0.5">
-                <CheckCircle2 className="w-4 h-4 text-amber-400" />
-                Transparent Titles
-              </span>
-            </div>
-          </div>
-
-        </div>
-      </section>
+        </section>
 
       {/* 2. COMPANY INTRODUCTION & TRUST SECTION */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

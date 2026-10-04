@@ -102,123 +102,45 @@ export function AppProvider({ children }) {
     return '/';
   });
 
-  // Fetch initial data from Supabase (if available)
+  // Fetch initial data directly from Supabase DB (Single Source of Truth for Localhost & Vercel)
   useEffect(() => {
     async function fetchSupabaseData() {
       try {
-        // 1. Fetch properties
-        const { data: propsData, error: propsErr } = await supabase.from('properties').select('*');
-        const localProps = (() => {
-          try { return JSON.parse(localStorage.getItem('pp_properties') || '[]'); } catch(e) { return []; }
-        })();
-
-        let finalProps = propsData ? propsData.map(p => ({
-          ...p,
-          categorySlug: p.category_slug || p.categorySlug,
-          created_at: p.created_at,
-          updated_at: p.updated_at
-        })) : [];
-
-        if (localProps.length > 0) {
-          const supabasePropIds = new Set(finalProps.map(p => p.id));
-          const unsyncedProps = localProps.filter(p => !supabasePropIds.has(p.id));
-
-          for (const p of unsyncedProps) {
-            try {
-              await supabase.from('properties').upsert([{
-                id: p.id,
-                title: p.title,
-                slug: p.slug || (p.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-                category: p.category,
-                category_slug: p.categorySlug || (p.category || '').toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-                location: p.location,
-                size: p.size,
-                price: p.price,
-                approval: p.approval,
-                status: p.status,
-                featured: p.featured,
-                description: p.description,
-                images: p.images,
-                features: p.features
-              }], { onConflict: 'id' });
-            } catch (e) {
-              console.warn('Syncing property to Supabase notice:', e);
-            }
-          }
-          finalProps = [...unsyncedProps, ...finalProps];
+        // 1. Fetch properties from Supabase
+        const { data: propsData, error: propsErr } = await supabase.from('properties').select('*').order('created_at', { ascending: false });
+        if (!propsErr && propsData && propsData.length > 0) {
+          const formatted = propsData.map(p => ({
+            ...p,
+            categorySlug: p.category_slug || p.categorySlug,
+            created_at: p.created_at,
+            updated_at: p.updated_at
+          }));
+          setProperties(formatted);
+          localStorage.setItem('pp_properties', JSON.stringify(formatted));
         }
 
-        if (finalProps.length > 0) {
-          setProperties(finalProps);
-          localStorage.setItem('pp_properties', JSON.stringify(finalProps));
+        // 2. Fetch services from Supabase
+        const { data: srvData, error: srvErr } = await supabase.from('services').select('*').order('created_at', { ascending: true });
+        if (!srvErr && srvData && srvData.length > 0) {
+          const formattedSrv = srvData.map(s => ({
+            id: s.id,
+            name: s.name,
+            shortDesc: s.short_desc || s.shortDesc,
+            fullDesc: s.full_desc || s.fullDesc,
+            icon: s.icon || 'MapPin'
+          }));
+          setServices(formattedSrv);
+          localStorage.setItem('pp_services', JSON.stringify(formattedSrv));
         }
 
-        // 2. Fetch services
-        const { data: srvData, error: srvErr } = await supabase.from('services').select('*');
-        const localServices = (() => {
-          try { return JSON.parse(localStorage.getItem('pp_services') || '[]'); } catch(e) { return []; }
-        })();
-
-        let finalServices = srvData ? srvData.map(s => ({
-          id: s.id,
-          name: s.name,
-          shortDesc: s.short_desc || s.shortDesc,
-          fullDesc: s.full_desc || s.fullDesc,
-          icon: s.icon || 'MapPin'
-        })) : [];
-
-        if (localServices.length > 0) {
-          const supabaseSrvIds = new Set(finalServices.map(s => s.id));
-          const unsyncedServices = localServices.filter(s => !supabaseSrvIds.has(s.id));
-
-          for (const s of unsyncedServices) {
-            try {
-              await supabase.from('services').upsert([{
-                id: s.id,
-                name: s.name,
-                short_desc: s.shortDesc || s.short_desc,
-                full_desc: s.fullDesc || s.full_desc,
-                icon: s.icon
-              }], { onConflict: 'id' });
-            } catch (e) {
-              console.warn('Syncing service to Supabase notice:', e);
-            }
-          }
-          finalServices = [...unsyncedServices, ...finalServices];
+        // 3. Fetch banners from Supabase
+        const { data: bnrData, error: bnrErr } = await supabase.from('banners').select('*').order('created_at', { ascending: false });
+        if (!bnrErr && bnrData && bnrData.length > 0) {
+          setBanners(bnrData);
+          localStorage.setItem('pp_banners', JSON.stringify(bnrData));
         }
 
-        if (finalServices.length > 0) {
-          setServices(finalServices);
-          localStorage.setItem('pp_services', JSON.stringify(finalServices));
-        }
-
-        // 3. Fetch banners
-        const { data: bnrData, error: bnrErr } = await supabase.from('banners').select('*');
-        const localBanners = (() => {
-          try { return JSON.parse(localStorage.getItem('pp_banners') || '[]'); } catch(e) { return []; }
-        })();
-
-        let finalBanners = bnrData || [];
-        if (localBanners.length > 0) {
-          const supabaseBnrIds = new Set((bnrData || []).map(b => b.id));
-          const unsyncedBanners = localBanners.filter(b => !supabaseBnrIds.has(b.id));
-
-          for (const b of unsyncedBanners) {
-            try {
-              await supabase.from('banners').upsert([b], { onConflict: 'id' });
-            } catch (e) {
-              console.warn('Syncing banner to Supabase notice:', e);
-            }
-          }
-          finalBanners = [...unsyncedBanners, ...(bnrData || [])];
-        }
-
-        if (finalBanners.length > 0) {
-          setBanners(finalBanners);
-          localStorage.setItem('pp_banners', JSON.stringify(finalBanners));
-        }
-
-        // 4. Fetch enquiries
+        // 4. Fetch enquiries from Supabase
         const { data: enqData, error: enqErr } = await supabase.from('enquiries').select('*').order('created_at', { ascending: false });
         if (!enqErr && enqData) {
           const savedDeleted = JSON.parse(localStorage.getItem('pp_deleted_enquiries') || '[]');
@@ -232,7 +154,7 @@ export function AppProvider({ children }) {
           localStorage.setItem('pp_enquiries', JSON.stringify(filteredEnquiries));
         }
       } catch (err) {
-        console.log('Supabase sync notice: using stored local state.', err);
+        console.log('Supabase sync notice:', err);
       }
     }
     fetchSupabaseData();
