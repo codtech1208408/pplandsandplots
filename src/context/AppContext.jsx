@@ -135,9 +135,20 @@ export function AppProvider({ children }) {
 
         // 3. Fetch banners from Supabase
         const { data: bnrData, error: bnrErr } = await supabase.from('banners').select('*').order('created_at', { ascending: false });
-        if (!bnrErr && bnrData && bnrData.length > 0) {
-          setBanners(bnrData);
-          localStorage.setItem('pp_banners', JSON.stringify(bnrData));
+        if (!bnrErr && bnrData) {
+          if (bnrData.length > 0) {
+            setBanners(bnrData);
+            localStorage.setItem('pp_banners', JSON.stringify(bnrData));
+          } else {
+            // If table exists but is empty, sync local banners to cloud
+            const savedLocal = JSON.parse(localStorage.getItem('pp_banners') || '[]');
+            if (savedLocal.length > 0) {
+              await supabase.from('banners').upsert(savedLocal, { onConflict: 'id' });
+              setBanners(savedLocal);
+            }
+          }
+        } else if (bnrErr) {
+          console.warn('Supabase Banners Sync Notice:', bnrErr.message);
         }
 
         // 4. Fetch enquiries from Supabase
@@ -420,7 +431,12 @@ export function AppProvider({ children }) {
 
     try {
       const { error } = await supabase.from('banners').upsert([newBanner], { onConflict: 'id' });
-      if (error) console.error('Supabase banner upsert error:', error);
+      if (error) {
+        console.error('Supabase banner upsert error:', error);
+        if (error.code === 'PGRST205' || error.message?.includes('schema cache') || error.message?.includes('banners')) {
+          alert('NOTICE: The "banners" table has not been created in Supabase yet!\n\nPlease run the SQL snippet in your Supabase SQL Editor (https://ixeeledgwublgaqrzlnf.supabase.co) so banners can sync across Localhost and Vercel.');
+        }
+      }
     } catch (e) {
       console.error('Supabase error adding banner', e);
     }
@@ -434,7 +450,8 @@ export function AppProvider({ children }) {
     });
 
     try {
-      await supabase.from('banners').update(updatedFields).eq('id', id);
+      const { error } = await supabase.from('banners').update(updatedFields).eq('id', id);
+      if (error) console.error('Supabase error updating banner', error);
     } catch (e) {
       console.error('Supabase error updating banner', e);
     }
@@ -448,7 +465,8 @@ export function AppProvider({ children }) {
     });
 
     try {
-      await supabase.from('banners').delete().eq('id', id);
+      const { error } = await supabase.from('banners').delete().eq('id', id);
+      if (error) console.error('Supabase error deleting banner', error);
     } catch (e) {
       console.error('Supabase error deleting banner', e);
     }
