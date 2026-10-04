@@ -136,16 +136,19 @@ export function AppProvider({ children }) {
         // 3. Fetch banners from Supabase
         const { data: bnrData, error: bnrErr } = await supabase.from('banners').select('*').order('created_at', { ascending: false });
         if (!bnrErr && bnrData) {
-          if (bnrData.length > 0) {
+          const savedLocal = JSON.parse(localStorage.getItem('pp_banners') || '[]');
+          const cloudIds = new Set(bnrData.map(b => String(b.id)));
+          const missingLocalBanners = savedLocal.filter(b => b && b.id && !cloudIds.has(String(b.id)));
+
+          if (missingLocalBanners.length > 0) {
+            // Automatically push any local banners to Supabase cloud database
+            await supabase.from('banners').upsert(missingLocalBanners, { onConflict: 'id' });
+            const merged = [...missingLocalBanners, ...bnrData];
+            setBanners(merged);
+            localStorage.setItem('pp_banners', JSON.stringify(merged));
+          } else if (bnrData.length > 0) {
             setBanners(bnrData);
             localStorage.setItem('pp_banners', JSON.stringify(bnrData));
-          } else {
-            // If table exists but is empty, sync local banners to cloud
-            const savedLocal = JSON.parse(localStorage.getItem('pp_banners') || '[]');
-            if (savedLocal.length > 0) {
-              await supabase.from('banners').upsert(savedLocal, { onConflict: 'id' });
-              setBanners(savedLocal);
-            }
           }
         } else if (bnrErr) {
           console.warn('Supabase Banners Sync Notice:', bnrErr.message);
