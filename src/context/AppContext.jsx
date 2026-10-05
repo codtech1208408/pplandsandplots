@@ -185,14 +185,23 @@ export function AppProvider({ children }) {
 
   // Admin Authentication Login / Logout
   const loginAdmin = (username, password) => {
-    const storedUsername = localStorage.getItem('pp_admin_username') || 'admin';
-    const storedPassword = localStorage.getItem('pp_admin_password') || 'admin123';
-    const emailDefault = 'pplp3008@gmail.com';
+    const cleanUsername = (username || '').trim().toLowerCase();
+    const cleanPassword = (password || '').trim();
 
-    if (
-      (username.toLowerCase() === storedUsername.toLowerCase() || username.toLowerCase() === emailDefault) &&
-      password === storedPassword
-    ) {
+    const storedUsername = localStorage.getItem('pp_admin_username')?.trim().toLowerCase();
+    const storedPassword = localStorage.getItem('pp_admin_password')?.trim();
+
+    const validUsernames = ['pplp3008@gmail.com'];
+    if (storedUsername) {
+      validUsernames.push(storedUsername);
+    }
+
+    const validPasswords = ['PPlp@30082023'];
+    if (storedPassword) {
+      validPasswords.push(storedPassword);
+    }
+
+    if (validUsernames.includes(cleanUsername) && validPasswords.includes(cleanPassword)) {
       setIsAdminLoggedIn(true);
       localStorage.setItem('pp_admin_auth', 'true');
       return { success: true };
@@ -201,7 +210,9 @@ export function AppProvider({ children }) {
   };
 
   const updateAdminPassword = (newPassword) => {
-    localStorage.setItem('pp_admin_password', newPassword);
+    if (newPassword) {
+      localStorage.setItem('pp_admin_password', newPassword.trim());
+    }
     return { success: true, message: 'Password updated successfully!' };
   };
 

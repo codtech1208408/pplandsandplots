@@ -440,7 +440,7 @@ export default function AdminPage() {
               <input
                 type="text"
                 required
-                placeholder="enter email or username"
+                placeholder="pplp3008@gmail.com"
                 value={usernameInput}
                 onChange={(e) => setUsernameInput(e.target.value)}
                 className="w-full px-4 py-3 bg-slate-950/90 border border-rose-500/40 rounded-2xl text-sm font-semibold text-white placeholder-slate-600 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all"
