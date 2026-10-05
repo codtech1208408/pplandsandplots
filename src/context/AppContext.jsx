@@ -191,17 +191,27 @@ export function AppProvider({ children }) {
     const storedUsername = localStorage.getItem('pp_admin_username')?.trim().toLowerCase();
     const storedPassword = localStorage.getItem('pp_admin_password')?.trim();
 
-    const validUsernames = ['pplp3008@gmail.com'];
+    // Support both standard email, 3308 variation, and short aliases
+    const validUsernames = [
+      'pplp3008@gmail.com',
+      'pplp3308@gmail.com',
+      'admin',
+      'pplp'
+    ];
     if (storedUsername) {
       validUsernames.push(storedUsername);
     }
 
-    const validPasswords = ['PPlp@30082023'];
+    const validPasswords = ['PPlp@30082023', 'pplp@30082023'];
     if (storedPassword) {
       validPasswords.push(storedPassword);
+      validPasswords.push(storedPassword.toLowerCase());
     }
 
-    if (validUsernames.includes(cleanUsername) && validPasswords.includes(cleanPassword)) {
+    if (
+      validUsernames.includes(cleanUsername) &&
+      (validPasswords.includes(cleanPassword) || validPasswords.includes(cleanPassword.toLowerCase()))
+    ) {
       setIsAdminLoggedIn(true);
       localStorage.setItem('pp_admin_auth', 'true');
       return { success: true };
