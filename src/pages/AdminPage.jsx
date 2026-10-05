@@ -28,7 +28,9 @@ import {
   Menu,
   ChevronRight,
   ArrowRight,
-  Mail
+  Mail,
+  RefreshCw,
+  Send
 } from 'lucide-react';
 
 export default function AdminPage() {
@@ -51,7 +53,8 @@ export default function AdminPage() {
     enquiries, 
     deleteEnquiry,
     navigate,
-    COMPANY_DETAILS
+    COMPANY_DETAILS,
+    updateAdminPassword
   } = useApp();
 
   // Login Form state
@@ -59,6 +62,104 @@ export default function AdminPage() {
   const [passwordInput, setPasswordInput] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState('');
+
+  // Forgot / Reset Password state
+  const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);
+  const [resetStep, setResetStep] = useState(1); // 1: enter email, 2: enter code & new pass, 3: success
+  const [resetEmail, setResetEmail] = useState('pplp3008@gmail.com');
+  const [resetCode, setResetCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetError, setResetError] = useState('');
+  const [resetSuccessMsg, setResetSuccessMsg] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+
+  // Open Reset Password Modal
+  const handleOpenForgotModal = () => {
+    setIsForgotModalOpen(true);
+    setResetStep(1);
+    setResetError('');
+    setResetSuccessMsg('');
+    setResetCode('');
+    setNewPassword('');
+    setConfirmPassword('');
+  };
+
+  // Step 1: Send OTP to email via Nodemailer SMTP endpoint
+  const handleSendResetCode = async (e) => {
+    e?.preventDefault();
+    if (!resetEmail) {
+      setResetError('Please enter admin email address.');
+      return;
+    }
+    setResetLoading(true);
+    setResetError('');
+    setResetSuccessMsg('');
+
+    try {
+      const response = await fetch('/api/send-reset-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: resetEmail })
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        setResetStep(2);
+        setResetSuccessMsg(`Verification code sent to ${resetEmail}! Check your inbox.`);
+      } else {
+        setResetError(data.error || 'Failed to send verification code.');
+      }
+    } catch (err) {
+      console.error(err);
+      setResetError('Error connecting to server. Please try again.');
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
+  // Step 2: Verify Code and Reset Admin Password
+  const handleVerifyAndResetPassword = async (e) => {
+    e?.preventDefault();
+    if (!resetCode || resetCode.trim().length !== 6) {
+      setResetError('Please enter the 6-digit verification code.');
+      return;
+    }
+    if (!newPassword || newPassword.length < 6) {
+      setResetError('New password must be at least 6 characters.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setResetError('Passwords do not match.');
+      return;
+    }
+
+    setResetLoading(true);
+    setResetError('');
+
+    try {
+      const response = await fetch('/api/verify-reset-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: resetEmail, code: resetCode })
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        updateAdminPassword(newPassword);
+        setResetStep(3);
+        setResetSuccessMsg('Your admin password has been reset successfully!');
+      } else {
+        setResetError(data.error || 'Invalid verification code.');
+      }
+    } catch (err) {
+      console.error(err);
+      setResetError('Verification failed. Please try again.');
+    } finally {
+      setResetLoading(false);
+    }
+  };
 
   // Active Tab state: 'properties' | 'services' | 'banners' | 'enquiries'
   const [activeTab, setActiveTab] = useState('properties');
@@ -375,7 +476,7 @@ export default function AdminPage() {
               <div className="text-right pt-1.5">
                 <button
                   type="button"
-                  onClick={() => setLoginError('Please contact system administrator to reset credentials.')}
+                  onClick={handleOpenForgotModal}
                   className="text-xs font-semibold text-rose-400 hover:text-rose-300 transition-colors"
                 >
                   Forgot Password?
@@ -404,6 +505,186 @@ export default function AdminPage() {
           </div>
 
         </div>
+
+        {/* FORGOT PASSWORD MODAL */}
+        {isForgotModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn">
+            <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-5 relative text-left">
+              <button
+                type="button"
+                onClick={() => setIsForgotModalOpen(false)}
+                className="absolute right-4 top-4 text-slate-400 hover:text-white p-1 rounded-full hover:bg-slate-800 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="text-center space-y-2">
+                <div className="w-12 h-12 bg-rose-500/10 border border-rose-500/30 rounded-2xl flex items-center justify-center mx-auto text-rose-500">
+                  <Key className="w-6 h-6" />
+                </div>
+                <h2 className="text-xl font-black text-white">Reset Admin Password</h2>
+                <p className="text-xs text-slate-400">
+                  {resetStep === 1 && 'Enter your admin email address to receive a 6-digit verification code.'}
+                  {resetStep === 2 && 'Enter the 6-digit code sent to your email and set your new password.'}
+                  {resetStep === 3 && 'Password successfully updated! You can now log in.'}
+                </p>
+              </div>
+
+              {resetError && (
+                <div className="bg-rose-500/20 border border-rose-500/40 text-rose-300 text-xs p-3 rounded-xl flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{resetError}</span>
+                </div>
+              )}
+
+              {resetSuccessMsg && (
+                <div className="bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs p-3 rounded-xl flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 shrink-0 text-emerald-400" />
+                  <span>{resetSuccessMsg}</span>
+                </div>
+              )}
+
+              {resetStep === 1 && (
+                <form onSubmit={handleSendResetCode} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                      Admin Email Address
+                    </label>
+                    <div className="relative">
+                      <Mail className="w-4 h-4 text-rose-500 absolute left-3.5 top-3.5" />
+                      <input
+                        type="email"
+                        required
+                        value={resetEmail}
+                        onChange={(e) => setResetEmail(e.target.value)}
+                        placeholder="pplp3008@gmail.com"
+                        className="w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 focus:border-rose-500 rounded-2xl text-sm font-semibold text-white placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-rose-500"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={resetLoading}
+                    className="w-full bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-extrabold py-3.5 rounded-2xl shadow-lg shadow-rose-600/25 text-sm flex items-center justify-center gap-2 disabled:opacity-50 transition-all"
+                  >
+                    {resetLoading ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        <span>Sending Code via SMTP...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-4 h-4" />
+                        <span>Send Verification Code</span>
+                      </>
+                    )}
+                  </button>
+                </form>
+              )}
+
+              {resetStep === 2 && (
+                <form onSubmit={handleVerifyAndResetPassword} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                      6-Digit Verification Code
+                    </label>
+                    <input
+                      type="text"
+                      maxLength={6}
+                      required
+                      value={resetCode}
+                      onChange={(e) => setResetCode(e.target.value)}
+                      placeholder="e.g. 581932"
+                      className="w-full text-center tracking-widest text-lg font-mono py-2.5 bg-slate-950 border border-rose-500/40 rounded-2xl text-rose-400 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                      New Password
+                    </label>
+                    <div className="relative">
+                      <Lock className="w-4 h-4 text-rose-500 absolute left-3.5 top-3.5" />
+                      <input
+                        type={showNewPassword ? 'text' : 'password'}
+                        required
+                        minLength={6}
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="At least 6 characters"
+                        className="w-full pl-10 pr-10 py-3 bg-slate-950 border border-slate-800 rounded-2xl text-sm font-semibold text-white focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                        className="absolute right-3.5 top-3.5 text-slate-400 hover:text-white"
+                      >
+                        {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                      Confirm New Password
+                    </label>
+                    <div className="relative">
+                      <Lock className="w-4 h-4 text-rose-500 absolute left-3.5 top-3.5" />
+                      <input
+                        type={showNewPassword ? 'text' : 'password'}
+                        required
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="Re-enter new password"
+                        className="w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-2xl text-sm font-semibold text-white focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setResetStep(1)}
+                      className="w-1/3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-2xl text-xs"
+                    >
+                      Resend
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={resetLoading}
+                      className="w-2/3 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-extrabold py-3 rounded-2xl shadow-lg shadow-rose-600/25 text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+                    >
+                      {resetLoading ? (
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <span>Reset Password</span>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {resetStep === 3 && (
+                <div className="space-y-4 text-center">
+                  <div className="w-12 h-12 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl flex items-center justify-center mx-auto text-emerald-400">
+                    <CheckCircle className="w-6 h-6" />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsForgotModalOpen(false);
+                      setLoginError('');
+                    }}
+                    className="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-3 rounded-2xl text-sm"
+                  >
+                    Back to Sign In
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     );
   }

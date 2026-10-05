@@ -185,12 +185,24 @@ export function AppProvider({ children }) {
 
   // Admin Authentication Login / Logout
   const loginAdmin = (username, password) => {
-    if (username === 'admin' && password === 'admin123') {
+    const storedUsername = localStorage.getItem('pp_admin_username') || 'admin';
+    const storedPassword = localStorage.getItem('pp_admin_password') || 'admin123';
+    const emailDefault = 'pplp3008@gmail.com';
+
+    if (
+      (username.toLowerCase() === storedUsername.toLowerCase() || username.toLowerCase() === emailDefault) &&
+      password === storedPassword
+    ) {
       setIsAdminLoggedIn(true);
       localStorage.setItem('pp_admin_auth', 'true');
       return { success: true };
     }
-    return { success: false, error: 'Invalid username or password!' };
+    return { success: false, error: 'Invalid username/email or password!' };
+  };
+
+  const updateAdminPassword = (newPassword) => {
+    localStorage.setItem('pp_admin_password', newPassword);
+    return { success: true, message: 'Password updated successfully!' };
   };
 
   const logoutAdmin = () => {
@@ -404,6 +416,7 @@ export function AppProvider({ children }) {
         isAdminLoggedIn,
         loginAdmin,
         logoutAdmin,
+        updateAdminPassword,
         properties,
         setProperties,
         addProperty,
