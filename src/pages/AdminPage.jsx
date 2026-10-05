@@ -21,11 +21,14 @@ import {
   ExternalLink,
   Search,
   Eye,
+  EyeOff,
   Sparkles,
   ShieldCheck,
   MapPin,
   Menu,
-  ChevronRight
+  ChevronRight,
+  ArrowRight,
+  Mail
 } from 'lucide-react';
 
 export default function AdminPage() {
@@ -54,6 +57,7 @@ export default function AdminPage() {
   // Login Form state
   const [usernameInput, setUsernameInput] = useState('');
   const [passwordInput, setPasswordInput] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState('');
 
   // Active Tab state: 'properties' | 'services' | 'banners' | 'enquiries'
@@ -297,78 +301,105 @@ export default function AdminPage() {
   if (!isAdminLoggedIn) {
     return (
       <div className="min-h-[85vh] flex items-center justify-center px-4 py-12 bg-slate-950 text-white">
-        <div className="w-full max-w-md space-y-8 bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl relative overflow-hidden">
+        <div className="w-full max-w-md space-y-6 bg-slate-900/90 border border-rose-500/20 p-8 rounded-3xl shadow-2xl relative overflow-hidden">
           
           <div className="text-center space-y-3">
             <img
               src="/image-removebg-preview.png"
               alt="PP LANDS & PLOTS Logo"
-              className="h-24 sm:h-28 w-auto object-contain mx-auto drop-shadow-lg"
+              className="h-20 sm:h-24 w-auto object-contain mx-auto drop-shadow-lg"
             />
-            <h1 className="text-2xl font-black tracking-tight text-white">
-              Admin Portal
+
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-rose-500/30 bg-rose-500/10 text-rose-400 text-[11px] font-bold tracking-wider uppercase mx-auto">
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>ADMIN SECURITY PORTAL</span>
+            </div>
+
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white leading-tight pt-1">
+              Administrator<br />Control Center
             </h1>
-            <p className="text-xs text-slate-400">
-              Enter admin portal credentials to manage listings, services & banners.
+            <p className="text-xs text-slate-400 font-medium">
+              Authorized PP LANDS & PLOTS personnel only
             </p>
           </div>
 
-
           {loginError && (
-            <div className="bg-red-500/20 border border-red-500/40 text-red-300 text-xs p-3 rounded-xl flex items-center gap-2">
+            <div className="bg-red-500/20 border border-red-500/40 text-red-300 text-xs p-3 rounded-xl flex items-center gap-2 text-left">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{loginError}</span>
             </div>
           )}
 
-          <form onSubmit={handleLoginSubmit} className="space-y-4">
+          <form onSubmit={handleLoginSubmit} className="space-y-4 text-left">
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1.5">
-                Username
-              </label>
-              <div className="relative">
-                <User className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
-                <input
-                  type="text"
-                  required
-                  value={usernameInput}
-                  onChange={(e) => setUsernameInput(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-rose-500"
-                />
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-200 mb-1.5">
+                <Mail className="w-4 h-4 text-rose-500" />
+                <span>Admin Email</span>
               </div>
+              <input
+                type="text"
+                required
+                placeholder="enter email or username"
+                value={usernameInput}
+                onChange={(e) => setUsernameInput(e.target.value)}
+                className="w-full px-4 py-3 bg-slate-950/90 border border-rose-500/40 rounded-2xl text-sm font-semibold text-white placeholder-slate-600 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all"
+              />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1.5">
-                Password
-              </label>
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-200 mb-1.5">
+                <Lock className="w-4 h-4 text-rose-500" />
+                <span>Master Password</span>
+              </div>
               <div className="relative">
-                <Key className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   required
+                  placeholder="••••••••••••"
                   value={passwordInput}
                   onChange={(e) => setPasswordInput(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-rose-500"
+                  className="w-full pl-4 pr-11 py-3 bg-slate-950/90 border border-slate-800 rounded-2xl text-sm font-semibold text-white placeholder-slate-600 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-4 h-4 text-slate-400" />
+                  ) : (
+                    <Eye className="w-4 h-4 text-slate-400" />
+                  )}
+                </button>
+              </div>
+              <div className="text-right pt-1.5">
+                <button
+                  type="button"
+                  onClick={() => setLoginError('Please contact system administrator to reset credentials.')}
+                  className="text-xs font-semibold text-rose-400 hover:text-rose-300 transition-colors"
+                >
+                  Forgot Password?
+                </button>
               </div>
             </div>
 
             <button
               type="submit"
-              className="w-full bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white font-extrabold py-3.5 rounded-xl shadow-lg transition-all text-sm mt-2"
+              className="w-full bg-gradient-to-r from-rose-600 via-red-600 to-rose-600 hover:from-rose-500 hover:to-red-500 text-white font-extrabold py-3.5 px-5 rounded-2xl shadow-lg shadow-rose-600/25 transition-all text-sm flex items-center justify-between group mt-3"
             >
-              Sign In to Admin Portal
+              <Key className="w-4 h-4 opacity-90 group-hover:scale-110 transition-transform" />
+              <span>Access Admin Control Center</span>
+              <ArrowRight className="w-4 h-4 opacity-90 group-hover:translate-x-0.5 transition-transform" />
             </button>
           </form>
 
-          <div className="text-center pt-2">
+          <div className="text-center pt-1">
             <button
               onClick={() => navigate('/')}
-              className="text-xs text-slate-400 hover:text-white flex items-center gap-1 mx-auto"
+              className="text-xs text-slate-400 hover:text-white flex items-center gap-1.5 mx-auto transition-colors"
             >
               <span>Return to Website</span>
-              <ExternalLink className="w-3 h-3" />
+              <ExternalLink className="w-3.5 h-3.5" />
             </button>
           </div>
 
