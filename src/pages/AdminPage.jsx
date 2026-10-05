@@ -52,8 +52,8 @@ export default function AdminPage() {
   } = useApp();
 
   // Login Form state
-  const [usernameInput, setUsernameInput] = useState('admin');
-  const [passwordInput, setPasswordInput] = useState('admin123');
+  const [usernameInput, setUsernameInput] = useState('');
+  const [passwordInput, setPasswordInput] = useState('');
   const [loginError, setLoginError] = useState('');
 
   // Active Tab state: 'properties' | 'services' | 'banners' | 'enquiries'
@@ -313,19 +313,6 @@ export default function AdminPage() {
             </p>
           </div>
 
-          {/* TEMPORARY CREDENTIALS DISPLAY BOX */}
-          <div className="bg-rose-950/40 border border-rose-500/30 rounded-2xl p-4 text-xs space-y-1">
-            <div className="flex items-center gap-1.5 font-bold text-rose-400">
-              <Sparkles className="w-4 h-4 text-amber-400" />
-              <span>Temporary Login Credentials:</span>
-            </div>
-            <p className="text-slate-300">
-              Username: <strong className="text-white font-mono">admin</strong>
-            </p>
-            <p className="text-slate-300">
-              Password: <strong className="text-white font-mono">admin123</strong>
-            </p>
-          </div>
 
           {loginError && (
             <div className="bg-red-500/20 border border-red-500/40 text-red-300 text-xs p-3 rounded-xl flex items-center gap-2">
