@@ -30,8 +30,10 @@ import {
   ArrowRight,
   Mail,
   RefreshCw,
-  Send
+  Send,
+  Globe
 } from 'lucide-react';
+import SeoAdminTab from '../components/admin/SeoAdminTab';
 
 export default function AdminPage() {
   const { 
@@ -700,7 +702,8 @@ export default function AdminPage() {
     { id: 'properties', label: 'Portfolio & Properties', count: properties.length, icon: Home },
     { id: 'services', label: 'Services', count: services.length, icon: Layers },
     { id: 'banners', label: 'Banners & Hero Slides', count: banners.length, icon: ImageIcon },
-    { id: 'enquiries', label: 'Customer Enquiries', count: enquiries.length, icon: MessageSquare }
+    { id: 'enquiries', label: 'Customer Enquiries', count: enquiries.length, icon: MessageSquare },
+    { id: 'seo', label: 'SEO & Google Console', badge: 'Active', icon: Globe }
   ];
 
   return (
@@ -775,7 +778,7 @@ export default function AdminPage() {
                 <span className={`text-[10px] px-2 py-0.5 rounded-full font-black ${
                   isActive ? 'bg-white/20 text-white' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700'
                 }`}>
-                  {item.count}
+                  {item.count !== undefined ? item.count : (item.badge || 'Live')}
                 </span>
               </button>
             );
@@ -828,6 +831,7 @@ export default function AdminPage() {
                 {activeTab === 'services' && 'Real Estate Services'}
                 {activeTab === 'banners' && 'Hero & Mobile Banners'}
                 {activeTab === 'enquiries' && 'Customer Enquiries & Leads'}
+                {activeTab === 'seo' && 'Search Engine Optimization & Google Search Console'}
               </h2>
               <span className="text-[11px] text-slate-400 font-semibold block">
                 Manage live content displayed on PP LANDS & PLOTS
@@ -847,49 +851,63 @@ export default function AdminPage() {
         <main className="p-4 sm:p-8 space-y-8 flex-1">
           
           {/* TOP SUMMARY STATS ROW */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
             <div 
               onClick={() => setActiveTab('properties')}
-              className={`p-5 rounded-2xl border transition-all cursor-pointer ${
+              className={`p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer ${
                 activeTab === 'properties' ? 'bg-slate-900 border-rose-500/50 shadow-lg' : 'bg-slate-900/60 border-slate-800 hover:border-slate-700'
               }`}
             >
               <span className="text-xs text-slate-400 font-bold uppercase">Total Listings</span>
-              <div className="text-3xl font-black text-rose-400 mt-1">{properties.length}</div>
+              <div className="text-2xl sm:text-3xl font-black text-rose-400 mt-1">{properties.length}</div>
               <p className="text-[11px] text-slate-500 mt-1">Portfolio Land & Plots</p>
             </div>
 
             <div 
               onClick={() => setActiveTab('services')}
-              className={`p-5 rounded-2xl border transition-all cursor-pointer ${
+              className={`p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer ${
                 activeTab === 'services' ? 'bg-slate-900 border-amber-500/50 shadow-lg' : 'bg-slate-900/60 border-slate-800 hover:border-slate-700'
               }`}
             >
               <span className="text-xs text-slate-400 font-bold uppercase">Services</span>
-              <div className="text-3xl font-black text-amber-400 mt-1">{services.length}</div>
+              <div className="text-2xl sm:text-3xl font-black text-amber-400 mt-1">{services.length}</div>
               <p className="text-[11px] text-slate-500 mt-1">Active Services Offered</p>
             </div>
 
             <div 
               onClick={() => setActiveTab('banners')}
-              className={`p-5 rounded-2xl border transition-all cursor-pointer ${
+              className={`p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer ${
                 activeTab === 'banners' ? 'bg-slate-900 border-emerald-500/50 shadow-lg' : 'bg-slate-900/60 border-slate-800 hover:border-slate-700'
               }`}
             >
               <span className="text-xs text-slate-400 font-bold uppercase">Hero Banners</span>
-              <div className="text-3xl font-black text-emerald-400 mt-1">{banners.length}</div>
+              <div className="text-2xl sm:text-3xl font-black text-emerald-400 mt-1">{banners.length}</div>
               <p className="text-[11px] text-slate-500 mt-1">Active Banner Slides</p>
             </div>
 
             <div 
               onClick={() => setActiveTab('enquiries')}
-              className={`p-5 rounded-2xl border transition-all cursor-pointer ${
+              className={`p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer ${
                 activeTab === 'enquiries' ? 'bg-slate-900 border-cyan-500/50 shadow-lg' : 'bg-slate-900/60 border-slate-800 hover:border-slate-700'
               }`}
             >
-              <span className="text-xs text-slate-400 font-bold uppercase">Customer Enquiries</span>
-              <div className="text-3xl font-black text-cyan-400 mt-1">{enquiries.length}</div>
+              <span className="text-xs text-slate-400 font-bold uppercase">Enquiries</span>
+              <div className="text-2xl sm:text-3xl font-black text-cyan-400 mt-1">{enquiries.length}</div>
               <p className="text-[11px] text-slate-500 mt-1">Customer Leads</p>
+            </div>
+
+            <div 
+              onClick={() => setActiveTab('seo')}
+              className={`p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer col-span-2 sm:col-span-1 ${
+                activeTab === 'seo' ? 'bg-slate-900 border-indigo-500/50 shadow-lg' : 'bg-slate-900/60 border-slate-800 hover:border-slate-700'
+              }`}
+            >
+              <span className="text-xs text-slate-400 font-bold uppercase">SEO & Console</span>
+              <div className="text-2xl sm:text-3xl font-black text-indigo-400 mt-1 flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span>Live</span>
+              </div>
+              <p className="text-[11px] text-slate-500 mt-1">Google Ready</p>
             </div>
           </div>
 
@@ -1213,6 +1231,11 @@ export default function AdminPage() {
                 </div>
               )}
             </div>
+          )}
+
+          {/* TAB 5: SEO & GOOGLE SEARCH CONSOLE */}
+          {activeTab === 'seo' && (
+            <SeoAdminTab />
           )}
 
         </main>

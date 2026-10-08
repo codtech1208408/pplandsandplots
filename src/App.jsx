@@ -16,6 +16,7 @@ import AdminPage from './pages/AdminPage';
 
 import AOS from 'aos';
 import 'aos/dist/aos.css';
+import SEOHead from './components/SEOHead';
 
 function MainRouter() {
   const { currentRoute, selectedProperty, setSelectedProperty } = useApp();
@@ -84,6 +85,7 @@ function MainRouter() {
 export default function App() {
   return (
     <AppProvider>
+      <SEOHead />
       <MainRouter />
     </AppProvider>
   );
