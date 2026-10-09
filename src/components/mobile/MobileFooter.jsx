@@ -1,6 +1,6 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
-import { ChevronRight, ArrowUp, Instagram, MessageSquare, Facebook, Youtube } from 'lucide-react';
+import { ChevronRight, ArrowUp, Instagram, Facebook, Youtube } from 'lucide-react';
 import Logo from '../Logo';
 
 export default function MobileFooter() {
@@ -80,40 +80,34 @@ export default function MobileFooter() {
         </h3>
         <div className="flex items-center gap-3">
           <a
-            href={COMPANY_DETAILS.contact.whatsappUrl}
+            href={COMPANY_DETAILS.social?.instagram || "https://www.instagram.com/pplandsandplots?obrf=MXQ2NXY2YnFpY3k5Zg%3D%3D&utm_source=qr"}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-9 h-9 rounded-full bg-gradient-to-tr from-purple-600 to-pink-500 text-white flex items-center justify-center shadow-md"
+            className="w-9 h-9 rounded-full bg-gradient-to-tr from-purple-600 to-pink-500 text-white flex items-center justify-center shadow-md active:scale-95 transition-transform"
             title="Instagram"
+            aria-label="Instagram"
           >
             <Instagram className="w-4 h-4" />
           </a>
           <a
-            href={COMPANY_DETAILS.contact.whatsappUrl}
+            href={COMPANY_DETAILS.social?.youtube || "http://www.youtube.com/@PPLP-3008"}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-9 h-9 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-md"
-            title="WhatsApp"
-          >
-            <MessageSquare className="w-4 h-4 fill-current" />
-          </a>
-          <a
-            href={COMPANY_DETAILS.contact.whatsappUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-md"
-            title="Facebook"
-          >
-            <Facebook className="w-4 h-4 fill-current" />
-          </a>
-          <a
-            href={COMPANY_DETAILS.contact.whatsappUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center shadow-md"
+            className="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center shadow-md active:scale-95 transition-transform"
             title="YouTube"
+            aria-label="YouTube"
           >
             <Youtube className="w-4 h-4" />
+          </a>
+          <a
+            href={COMPANY_DETAILS.social?.facebook || "https://www.facebook.com/share/19g2oXzEYi/?mibextid=wwXIfr"}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-md active:scale-95 transition-transform"
+            title="Facebook"
+            aria-label="Facebook"
+          >
+            <Facebook className="w-4 h-4 fill-current" />
           </a>
         </div>
       </div>

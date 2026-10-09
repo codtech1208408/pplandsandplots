@@ -21,6 +21,11 @@ export const COMPANY_DETAILS = {
     telUrl: "tel:9553428583",
     mailtoUrl: "mailto:pplp3008@gmail.com"
   },
+  social: {
+    instagram: "https://www.instagram.com/pplandsandplots?obrf=MXQ2NXY2YnFpY3k5Zg%3D%3D&utm_source=qr",
+    youtube: "http://www.youtube.com/@PPLP-3008",
+    facebook: "https://www.facebook.com/share/19g2oXzEYi/?mibextid=wwXIfr"
+  },
   vision: "To be the most trusted real estate partner in Telangana, making land and plot ownership achievable and affordable for every family, regardless of their financial background.",
   mission: "To empower the people of Telangana by providing transparent, reliable, and accessible real estate services, ensuring that everyone, from modest families to seasoned investors, can confidently buy, sell, and invest in property.",
   policy: {

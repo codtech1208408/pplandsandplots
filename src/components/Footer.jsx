@@ -3,7 +3,7 @@ import { useApp } from '../context/AppContext';
 import Logo from './Logo';
 import PolicyBanner from './PolicyBanner';
 import MobileFooter from './mobile/MobileFooter';
-import { Phone, Mail, MapPin, MessageSquare, ShieldCheck, ArrowRight } from 'lucide-react';
+import { Phone, Mail, MapPin, MessageSquare, ShieldCheck, ArrowRight, Instagram, Facebook, Youtube } from 'lucide-react';
 import { PROPERTY_CATEGORIES } from '../data/properties';
 
 export default function Footer() {
@@ -29,6 +29,43 @@ export default function Footer() {
               <div className="pt-2 flex items-center gap-2 text-xs font-semibold text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 rounded-lg px-3 py-2 w-fit">
                 <ShieldCheck className="w-4 h-4 text-emerald-400" />
                 <span>Offline Business Established 2023</span>
+              </div>
+
+              {/* Social Media Links */}
+              <div className="pt-2">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-300 mb-3">Connect With Us</h4>
+                <div className="flex items-center gap-2.5">
+                  <a
+                    href={COMPANY_DETAILS.social?.instagram || "https://www.instagram.com/pplandsandplots?obrf=MXQ2NXY2YnFpY3k5Zg%3D%3D&utm_source=qr"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-600 via-pink-600 to-amber-500 text-white flex items-center justify-center shadow-md hover:scale-110 hover:shadow-pink-500/30 transition-all duration-200"
+                    title="Follow on Instagram"
+                    aria-label="Instagram"
+                  >
+                    <Instagram className="w-4 h-4" />
+                  </a>
+                  <a
+                    href={COMPANY_DETAILS.social?.youtube || "http://www.youtube.com/@PPLP-3008"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-9 h-9 rounded-xl bg-red-600 text-white flex items-center justify-center shadow-md hover:scale-110 hover:shadow-red-600/30 transition-all duration-200"
+                    title="Subscribe on YouTube"
+                    aria-label="YouTube"
+                  >
+                    <Youtube className="w-4 h-4" />
+                  </a>
+                  <a
+                    href={COMPANY_DETAILS.social?.facebook || "https://www.facebook.com/share/19g2oXzEYi/?mibextid=wwXIfr"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md hover:scale-110 hover:shadow-blue-600/30 transition-all duration-200"
+                    title="Follow on Facebook"
+                    aria-label="Facebook"
+                  >
+                    <Facebook className="w-4 h-4 fill-current" />
+                  </a>
+                </div>
               </div>
             </div>
 
@@ -137,6 +174,39 @@ export default function Footer() {
             <p>© {new Date().getFullYear()} {COMPANY_DETAILS.name}. Established 2023 in Shankarpally, Hyderabad, Telangana. All rights reserved.</p>
             <div className="flex items-center space-x-4">
               <span className="text-slate-500">Transparent • Reliable • Accessible</span>
+              <span className="text-slate-700">|</span>
+              <div className="flex items-center gap-3">
+                <a
+                  href={COMPANY_DETAILS.social?.instagram || "https://www.instagram.com/pplandsandplots?obrf=MXQ2NXY2YnFpY3k5Zg%3D%3D&utm_source=qr"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-slate-400 hover:text-pink-400 transition-colors"
+                  title="Instagram"
+                  aria-label="Instagram"
+                >
+                  <Instagram className="w-4 h-4" />
+                </a>
+                <a
+                  href={COMPANY_DETAILS.social?.youtube || "http://www.youtube.com/@PPLP-3008"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-slate-400 hover:text-red-400 transition-colors"
+                  title="YouTube"
+                  aria-label="YouTube"
+                >
+                  <Youtube className="w-4 h-4" />
+                </a>
+                <a
+                  href={COMPANY_DETAILS.social?.facebook || "https://www.facebook.com/share/19g2oXzEYi/?mibextid=wwXIfr"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-slate-400 hover:text-blue-400 transition-colors"
+                  title="Facebook"
+                  aria-label="Facebook"
+                >
+                  <Facebook className="w-4 h-4" />
+                </a>
+              </div>
             </div>
           </div>
         </div>
