@@ -17,7 +17,10 @@ export default function PropertyDetailsModal({ property, onClose }) {
 
   if (!property) return null;
 
-  const whatsappMessage = `Hello PP LANDS & PLOTS, I am interested in property details: "${property.title}" (${property.size}, Location: ${property.location}). Please provide complete details.`;
+  const isSold = property.status === 'Sold Out' || property.status === 'Sold';
+  const whatsappMessage = isSold 
+    ? `Hello PP LANDS & PLOTS, I noticed that property "${property.title}" (${property.size}, Location: ${property.location}) is marked as Sold Out. Do you have similar available plots/land in this area?`
+    : `Hello PP LANDS & PLOTS, I am interested in property details: "${property.title}" (${property.size}, Location: ${property.location}). Please provide complete details.`;
   const whatsappUrl = `https://wa.me/919553428583?text=${encodeURIComponent(whatsappMessage)}`;
 
   return (
@@ -108,13 +111,24 @@ export default function PropertyDetailsModal({ property, onClose }) {
               </p>
             </div>
 
-            {/* Price & Size Row */}
-            <div className="flex items-center gap-3">
+            {/* Price, Size & Status Row */}
+            <div className="flex items-center gap-2.5 flex-wrap">
               <span className="text-xl font-extrabold text-red-600 dark:text-red-400">
                 {property.price}
               </span>
               <span className="bg-amber-400 text-slate-950 text-xs font-extrabold px-3 py-1 rounded-lg shadow-sm">
                 {property.size}
+              </span>
+              <span className={`text-xs font-extrabold px-3 py-1 rounded-lg border uppercase tracking-wider ${
+                isSold
+                  ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30'
+                  : property.status === 'Reserved'
+                  ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30'
+                  : property.status === 'Coming Soon'
+                  ? 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/30'
+                  : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
+              }`}>
+                {property.status || 'Available'}
               </span>
             </div>
 

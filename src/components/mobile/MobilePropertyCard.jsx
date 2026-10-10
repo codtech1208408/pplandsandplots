@@ -2,29 +2,49 @@ import React from 'react';
 import { MapPin, Maximize2, MessageSquare, Eye } from 'lucide-react';
 
 export default function MobilePropertyCard({ property, onSelect }) {
-  const whatsappMessage = `Hello PP LANDS & PLOTS, I am interested in property: "${property.title}" (${property.size}, Location: ${property.location}). Please send more details.`;
+  const isSold = property.status === 'Sold Out' || property.status === 'Sold';
+  const whatsappMessage = isSold 
+    ? `Hello PP LANDS & PLOTS, I noticed that property: "${property.title}" (${property.size}, Location: ${property.location}) is marked Sold Out. Do you have similar available plots/land in this area?`
+    : `Hello PP LANDS & PLOTS, I am interested in property: "${property.title}" (${property.size}, Location: ${property.location}). Please send more details.`;
   const whatsappUrl = `https://wa.me/919553428583?text=${encodeURIComponent(whatsappMessage)}`;
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm hover:shadow-md space-y-2 p-2.5 flex flex-col justify-between h-full">
+    <div className={`bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm hover:shadow-md space-y-2 p-2.5 flex flex-col justify-between h-full ${isSold ? 'opacity-95' : ''}`}>
       {/* Property Image Header */}
       <div className="relative aspect-[16/10] rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800">
         <img
           src={property.images[0]}
           alt={property.title}
-          className="w-full h-full object-cover"
+          className={`w-full h-full object-cover ${isSold ? 'grayscale-[20%]' : ''}`}
           onError={(e) => {
             e.target.onerror = null;
             e.target.src = 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=800&q=80';
           }}
         />
         
-        {/* For Sale Badge top right */}
+        {/* Dynamic Status Badge top right */}
         <div className="absolute top-2 right-2">
-          <span className="bg-red-600 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full shadow-sm uppercase tracking-wider">
-            For Sale
+          <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full shadow-sm uppercase tracking-wider ${
+            isSold
+              ? 'bg-rose-600 text-white'
+              : property.status === 'Reserved'
+              ? 'bg-amber-500 text-slate-950 font-black'
+              : property.status === 'Coming Soon'
+              ? 'bg-sky-600 text-white'
+              : 'bg-emerald-600 text-white'
+          }`}>
+            {property.status || 'Available'}
           </span>
         </div>
+
+        {/* Sold Out Visual Overlay on Mobile */}
+        {isSold && (
+          <div className="absolute inset-0 bg-slate-950/30 backdrop-blur-[0.5px] flex items-center justify-center pointer-events-none">
+            <span className="bg-rose-600/95 text-white font-black text-xs px-3 py-1 rounded-lg border border-rose-300 uppercase tracking-widest shadow-xl rotate-[-6deg]">
+              SOLD OUT
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Property Details */}

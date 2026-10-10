@@ -20,18 +20,23 @@ export default function PortfolioPage() {
     'Venture Plots'
   ];
 
-  const statuses = ['All', 'Available', 'Reserved', 'Sold', 'Coming Soon'];
+  const statuses = ['All', 'Available', 'Reserved', 'Sold Out', 'Coming Soon'];
 
   // Filter properties dynamically
   const filteredProperties = properties.filter((prop) => {
     const matchesCategory = activeCategory === 'All' || prop.category === activeCategory;
-    const matchesStatus = activeStatus === 'All' || prop.status === activeStatus;
+    const matchesStatus =
+      activeStatus === 'All' ||
+      prop.status === activeStatus ||
+      (activeStatus === 'Sold Out' && (prop.status === 'Sold' || prop.status === 'Sold Out')) ||
+      (activeStatus === 'Sold' && (prop.status === 'Sold' || prop.status === 'Sold Out'));
     const matchesSearch =
       searchQuery.trim() === '' ||
       prop.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       prop.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
       prop.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      prop.approval.toLowerCase().includes(searchQuery.toLowerCase());
+      prop.approval.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (prop.status && prop.status.toLowerCase().includes(searchQuery.toLowerCase()));
 
     return matchesCategory && matchesStatus && matchesSearch;
   });

@@ -210,8 +210,9 @@ export default function AdminPage() {
     active: true
   });
 
-  // Search Filters
+  // Search & Filter State
   const [searchTerm, setSearchTerm] = useState('');
+  const [propStatusFilter, setPropStatusFilter] = useState('All');
 
   // Handle Login Submit
   const handleLoginSubmit = (e) => {
@@ -692,11 +693,20 @@ export default function AdminPage() {
   }
 
   // LOGGED IN ADMIN DASHBOARD VIEW WITH VERTICAL SIDEBAR LAYOUT
-  const filteredProperties = properties.filter(p => 
-    p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.location.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredProperties = properties.filter(p => {
+    const term = searchTerm.toLowerCase();
+    const matchesSearch = 
+      p.title.toLowerCase().includes(term) ||
+      p.category.toLowerCase().includes(term) ||
+      p.location.toLowerCase().includes(term) ||
+      (p.status && p.status.toLowerCase().includes(term));
+    const matchesStatus = 
+      propStatusFilter === 'All' ||
+      p.status === propStatusFilter ||
+      (propStatusFilter === 'Sold Out' && (p.status === 'Sold' || p.status === 'Sold Out')) ||
+      (propStatusFilter === 'Sold' && (p.status === 'Sold' || p.status === 'Sold Out'));
+    return matchesSearch && matchesStatus;
+  });
 
   const navItems = [
     { id: 'properties', label: 'Portfolio & Properties', count: properties.length, icon: Home },
@@ -914,21 +924,51 @@ export default function AdminPage() {
           {/* TAB 1: PORTFOLIO & PROPERTIES MANAGEMENT */}
           {activeTab === 'properties' && (
             <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-900 p-4 rounded-2xl border border-slate-800">
-                <div className="relative w-full sm:w-80">
-                  <Search className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
-                  <input
-                    type="text"
-                    placeholder="Search properties by title, category, location..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs font-semibold text-white focus:outline-none focus:ring-2 focus:ring-rose-500"
-                  />
+              <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 bg-slate-900 p-4 rounded-2xl border border-slate-800">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1">
+                  <div className="relative w-full sm:w-80">
+                    <Search className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
+                    <input
+                      type="text"
+                      placeholder="Search properties by title, category, location, status..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full pl-9 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs font-semibold text-white focus:outline-none focus:ring-2 focus:ring-rose-500"
+                    />
+                  </div>
+
+                  {/* Status Filter Chips */}
+                  <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-1">
+                    {[
+                      { id: 'All', label: 'All', count: properties.length },
+                      { id: 'Available', label: 'Available', count: properties.filter(p => p.status === 'Available' || !p.status).length },
+                      { id: 'Sold Out', label: 'Sold Out', count: properties.filter(p => p.status === 'Sold Out' || p.status === 'Sold').length },
+                      { id: 'Reserved', label: 'Reserved', count: properties.filter(p => p.status === 'Reserved').length }
+                    ].map(st => (
+                      <button
+                        key={st.id}
+                        type="button"
+                        onClick={() => setPropStatusFilter(st.id)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${
+                          propStatusFilter === st.id
+                            ? st.id === 'Sold Out'
+                              ? 'bg-rose-600 text-white shadow-md shadow-rose-600/30'
+                              : st.id === 'Available'
+                              ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'
+                              : 'bg-rose-600 text-white shadow-md'
+                            : 'bg-slate-950 hover:bg-slate-800 text-slate-400 border border-slate-800'
+                        }`}
+                      >
+                        <span>{st.label}</span>
+                        <span className="text-[10px] opacity-75 font-mono">({st.count})</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 <button
                   onClick={openAddProperty}
-                  className="w-full sm:w-auto bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white font-extrabold px-5 py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg transition-all"
+                  className="bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white font-extrabold px-5 py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg transition-all shrink-0"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Add New Property Listing</span>
@@ -936,80 +976,128 @@ export default function AdminPage() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredProperties.map((prop) => (
-                  <div
-                    key={prop.id}
-                    className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden flex flex-col justify-between space-y-4 hover:border-slate-700 transition-all group"
-                  >
-                    <div className="space-y-3">
-                      <div className="relative aspect-[16/10] overflow-hidden bg-slate-950">
-                        <img
-                          src={prop.images && prop.images[0] ? prop.images[0] : 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=800&q=80'}
-                          alt={prop.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                        <div className="absolute top-3 left-3 bg-slate-950/80 text-white text-[10px] font-bold px-2.5 py-1 rounded-full backdrop-blur-sm">
-                          {prop.category}
+                {filteredProperties.map((prop) => {
+                  const isSold = prop.status === 'Sold Out' || prop.status === 'Sold';
+                  const isReserved = prop.status === 'Reserved';
+                  const isComingSoon = prop.status === 'Coming Soon';
+
+                  return (
+                    <div
+                      key={prop.id}
+                      className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden flex flex-col justify-between space-y-4 hover:border-slate-700 transition-all group"
+                    >
+                      <div className="space-y-3">
+                        <div className="relative aspect-[16/10] overflow-hidden bg-slate-950">
+                          <img
+                            src={prop.images && prop.images[0] ? prop.images[0] : 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=800&q=80'}
+                            alt={prop.title}
+                            className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${isSold ? 'grayscale-[30%] opacity-90' : ''}`}
+                          />
+                          <div className="absolute top-3 left-3 bg-slate-950/80 text-white text-[10px] font-bold px-2.5 py-1 rounded-full backdrop-blur-sm shadow-md">
+                            {prop.category}
+                          </div>
+
+                          {/* Dynamic Status Badge */}
+                          <div className={`absolute top-3 right-3 text-[11px] font-extrabold px-2.5 py-1 rounded-lg shadow-lg backdrop-blur-md flex items-center gap-1.5 uppercase tracking-wider ${
+                            isSold
+                              ? 'bg-rose-600 text-white border border-rose-400/50 shadow-rose-950/50'
+                              : isReserved
+                              ? 'bg-amber-500 text-slate-950 border border-amber-300/50 font-black'
+                              : isComingSoon
+                              ? 'bg-sky-600 text-white border border-sky-400/50'
+                              : 'bg-emerald-600 text-white border border-emerald-400/50 shadow-emerald-950/50'
+                          }`}>
+                            <span className={`w-2 h-2 rounded-full ${isSold ? 'bg-white' : isReserved ? 'bg-slate-950' : 'bg-white animate-pulse'}`} />
+                            <span>{prop.status || 'Available'}</span>
+                          </div>
+
+                          {/* Sold Out Ribbon Overlay if Sold */}
+                          {isSold && (
+                            <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-[1px] flex items-center justify-center pointer-events-none">
+                              <span className="bg-rose-600/95 text-white font-black text-sm px-4 py-1.5 rounded-lg border-2 border-rose-300 uppercase tracking-widest shadow-2xl rotate-[-8deg]">
+                                SOLD OUT
+                              </span>
+                            </div>
+                          )}
                         </div>
-                        <div className="absolute top-3 right-3 bg-rose-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-md">
-                          {prop.status}
+
+                        <div className="p-5 space-y-2">
+                          <h3 className="font-extrabold text-base text-white leading-snug line-clamp-2">
+                            {prop.title}
+                          </h3>
+
+                          <div className="flex flex-wrap items-center gap-3 text-xs text-slate-400 pt-1">
+                            <span className="flex items-center gap-1 font-semibold">
+                              <MapPin className="w-3.5 h-3.5 text-rose-500" />
+                              {prop.location}
+                            </span>
+                            <span className="font-bold text-amber-400">
+                              {prop.size}
+                            </span>
+                            <span className="bg-slate-800 text-slate-300 text-[10px] px-2 py-0.5 rounded">
+                              {prop.approval}
+                            </span>
+                          </div>
+
+                          <p className="text-xs text-slate-400 line-clamp-2 pt-1 leading-relaxed">
+                            {prop.description}
+                          </p>
                         </div>
                       </div>
 
-                      <div className="p-5 space-y-2">
-                        <h3 className="font-extrabold text-base text-white leading-snug line-clamp-2">
-                          {prop.title}
-                        </h3>
+                      <div className="p-5 pt-0 flex flex-wrap items-center justify-between gap-2 border-t border-slate-800/60 pt-4">
+                        <span className="text-xs font-black text-emerald-400">
+                          {prop.price}
+                        </span>
 
-                        <div className="flex flex-wrap items-center gap-3 text-xs text-slate-400 pt-1">
-                          <span className="flex items-center gap-1 font-semibold">
-                            <MapPin className="w-3.5 h-3.5 text-rose-500" />
-                            {prop.location}
-                          </span>
-                          <span className="font-bold text-amber-400">
-                            {prop.size}
-                          </span>
-                          <span className="bg-slate-800 text-slate-300 text-[10px] px-2 py-0.5 rounded">
-                            {prop.approval}
-                          </span>
+                        <div className="flex items-center gap-2">
+                          {/* Quick 1-Click Status Dropdown */}
+                          <div className="relative" title="Click to quickly switch status">
+                            <select
+                              value={prop.status || 'Available'}
+                              onChange={(e) => {
+                                updateProperty(prop.id, { status: e.target.value });
+                              }}
+                              className={`text-xs font-extrabold px-2.5 py-1.5 rounded-lg border cursor-pointer outline-none transition-all shadow-sm ${
+                                isSold
+                                  ? 'bg-rose-950/90 border-rose-600 text-rose-300 hover:border-rose-400'
+                                  : isReserved
+                                  ? 'bg-amber-950/90 border-amber-600 text-amber-300 hover:border-amber-400'
+                                  : 'bg-emerald-950/90 border-emerald-600 text-emerald-300 hover:border-emerald-400'
+                              }`}
+                            >
+                              <option value="Available" className="bg-slate-900 text-emerald-400 font-bold">🟢 Available</option>
+                              <option value="Sold Out" className="bg-slate-900 text-rose-400 font-bold">🔴 Sold Out</option>
+                              <option value="Reserved" className="bg-slate-900 text-amber-400 font-bold">🟡 Reserved</option>
+                              <option value="Coming Soon" className="bg-slate-900 text-sky-400 font-bold">🔵 Coming Soon</option>
+                            </select>
+                          </div>
+
+                          <button
+                            onClick={() => openEditProperty(prop)}
+                            className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 text-xs font-bold flex items-center gap-1 transition-colors"
+                            title="Edit Full Property Details"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                            <span>Edit</span>
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              if (confirm(`Are you sure you want to delete "${prop.title}"?`)) {
+                                deleteProperty(prop.id);
+                              }
+                            }}
+                            className="p-2 rounded-lg bg-red-600/20 hover:bg-red-600/40 text-red-400 text-xs font-bold flex items-center gap-1 transition-colors"
+                            title="Delete Property"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
                         </div>
-
-                        <p className="text-xs text-slate-400 line-clamp-2 pt-1 leading-relaxed">
-                          {prop.description}
-                        </p>
                       </div>
                     </div>
-
-                    <div className="p-5 pt-0 flex items-center justify-between border-t border-slate-800/60 pt-4">
-                      <span className="text-xs font-black text-emerald-400">
-                        {prop.price}
-                      </span>
-
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => openEditProperty(prop)}
-                          className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 text-xs font-bold flex items-center gap-1 transition-colors"
-                          title="Edit Property"
-                        >
-                          <Edit3 className="w-3.5 h-3.5" />
-                          <span>Edit</span>
-                        </button>
-
-                        <button
-                          onClick={() => {
-                            if (confirm(`Are you sure you want to delete "${prop.title}"?`)) {
-                              deleteProperty(prop.id);
-                            }
-                          }}
-                          className="p-2 rounded-lg bg-red-600/20 hover:bg-red-600/40 text-red-400 text-xs font-bold flex items-center gap-1 transition-colors"
-                          title="Delete Property"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
@@ -1275,7 +1363,7 @@ export default function AdminPage() {
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
                       <label className="block font-bold text-slate-300 mb-1">Category *</label>
                       <select
@@ -1287,6 +1375,29 @@ export default function AdminPage() {
                         <option value="Venture Plots">Venture Plots</option>
                         <option value="Agriculture Land">Agriculture Land</option>
                         <option value="Commercial Properties">Commercial Properties</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-slate-300 mb-1 flex items-center justify-between">
+                        <span>Property Status *</span>
+                        <span className="text-[10px] text-amber-400 font-semibold">Live Availability</span>
+                      </label>
+                      <select
+                        value={propForm.status || 'Available'}
+                        onChange={(e) => setPropForm({ ...propForm, status: e.target.value })}
+                        className={`w-full p-2.5 bg-slate-950 border rounded-xl font-bold focus:ring-2 focus:ring-rose-500 transition-colors ${
+                          (propForm.status === 'Sold Out' || propForm.status === 'Sold')
+                            ? 'text-rose-400 border-rose-500/80 bg-rose-950/20'
+                            : propForm.status === 'Reserved'
+                            ? 'text-amber-400 border-amber-500/80 bg-amber-950/20'
+                            : 'text-emerald-400 border-emerald-500/80 bg-emerald-950/20'
+                        }`}
+                      >
+                        <option value="Available" className="bg-slate-900 text-emerald-400 font-bold">🟢 Available</option>
+                        <option value="Sold Out" className="bg-slate-900 text-rose-400 font-bold">🔴 Sold Out</option>
+                        <option value="Reserved" className="bg-slate-900 text-amber-400 font-bold">🟡 Reserved</option>
+                        <option value="Coming Soon" className="bg-slate-900 text-sky-400 font-bold">🔵 Coming Soon</option>
                       </select>
                     </div>
 

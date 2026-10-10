@@ -5,26 +5,31 @@ import { MapPin, Maximize2, ShieldCheck, MessageSquare, ArrowRight, Sparkles } f
 export default function PropertyCard({ property, onSelect }) {
   const { openEnquiry } = useApp();
 
+  const isSold = property.status === 'Sold Out' || property.status === 'Sold';
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'Available':
-        return 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30';
+        return 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/40';
       case 'Reserved':
-        return 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30';
+        return 'bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/40';
       case 'Sold':
-        return 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/30';
+      case 'Sold Out':
+        return 'bg-rose-500/20 text-rose-700 dark:text-rose-300 border-rose-500/40';
       case 'Coming Soon':
-        return 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30';
+        return 'bg-sky-500/20 text-sky-700 dark:text-sky-300 border-sky-500/40';
       default:
-        return 'bg-slate-500/10 text-slate-600 border-slate-500/30';
+        return 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/40';
     }
   };
 
-  const whatsappMessage = `Hello PP LANDS & PLOTS, I am interested in inquiring about property: "${property.title}" (${property.size}, Location: ${property.location}). Please share more details.`;
+  const whatsappMessage = isSold 
+    ? `Hello PP LANDS & PLOTS, I noticed that property "${property.title}" (${property.size}, Location: ${property.location}) is marked as Sold Out. Do you have similar available plots/land in this area?`
+    : `Hello PP LANDS & PLOTS, I am interested in inquiring about property: "${property.title}" (${property.size}, Location: ${property.location}). Please share more details.`;
   const whatsappUrl = `https://wa.me/919553428583?text=${encodeURIComponent(whatsappMessage)}`;
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/80 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col group property-card-hover">
+    <div className={`bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/80 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col group property-card-hover ${isSold ? 'opacity-95' : ''}`}>
       
       {/* Property Image Header */}
       <div className="relative aspect-[16/10] overflow-hidden bg-slate-100 dark:bg-slate-900">
@@ -32,7 +37,7 @@ export default function PropertyCard({ property, onSelect }) {
           src={property.images[0]}
           alt={property.title}
           loading="lazy"
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${isSold ? 'grayscale-[20%]' : ''}`}
           onError={(e) => {
             e.target.onerror = null;
             e.target.src = 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80';
@@ -44,10 +49,19 @@ export default function PropertyCard({ property, onSelect }) {
           <span className="bg-slate-950/80 backdrop-blur-md text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">
             {property.category}
           </span>
-          <span className={`text-xs font-extrabold px-3 py-1 rounded-full border backdrop-blur-md shadow-md ${getStatusColor(property.status)}`}>
-            {property.status}
+          <span className={`text-xs font-extrabold px-3 py-1 rounded-full border backdrop-blur-md shadow-md uppercase tracking-wider ${getStatusColor(property.status)}`}>
+            {property.status || 'Available'}
           </span>
         </div>
+
+        {/* Sold Out Visual Overlay */}
+        {isSold && (
+          <div className="absolute inset-0 bg-slate-950/30 backdrop-blur-[0.5px] flex items-center justify-center pointer-events-none">
+            <span className="bg-rose-600/95 text-white font-black text-xs sm:text-sm px-3.5 py-1 rounded-lg border border-rose-300 uppercase tracking-widest shadow-xl rotate-[-6deg]">
+              SOLD OUT
+            </span>
+          </div>
+        )}
 
         {/* Featured Tag if applicable */}
         {property.featured && (

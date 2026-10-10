@@ -313,24 +313,33 @@ export function AppProvider({ children }) {
   };
 
   const updateProperty = async (id, updatedFields) => {
-    try {
-      const dbPayload = {};
-      if (updatedFields.title) dbPayload.title = updatedFields.title;
-      if (updatedFields.category) {
-        dbPayload.category = updatedFields.category;
-        dbPayload.category_slug = updatedFields.category.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-      }
-      if (updatedFields.location) dbPayload.location = updatedFields.location;
-      if (updatedFields.size) dbPayload.size = updatedFields.size;
-      if (updatedFields.price) dbPayload.price = updatedFields.price;
-      if (updatedFields.approval) dbPayload.approval = updatedFields.approval;
-      if (updatedFields.status) dbPayload.status = updatedFields.status;
-      if (updatedFields.featured !== undefined) dbPayload.featured = updatedFields.featured;
-      if (updatedFields.description) dbPayload.description = updatedFields.description;
-      if (updatedFields.images) dbPayload.images = updatedFields.images;
-      if (updatedFields.features) dbPayload.features = updatedFields.features;
+    // Optimistic local update for instantaneous UI feedback
+    setProperties(prev => prev.map(p => p.id === id ? { ...p, ...updatedFields } : p));
 
-      await supabase.from('properties').update(dbPayload).eq('id', id);
+    try {
+      const existing = properties.find(p => p.id === id) || {};
+      const merged = { ...existing, ...updatedFields };
+
+      const dbPayload = {};
+      if (merged.title !== undefined) dbPayload.title = merged.title;
+      if (merged.category !== undefined) {
+        dbPayload.category = merged.category;
+        dbPayload.category_slug = merged.category.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      }
+      if (merged.location !== undefined) dbPayload.location = merged.location;
+      if (merged.size !== undefined) dbPayload.size = merged.size;
+      if (merged.price !== undefined) dbPayload.price = merged.price;
+      if (merged.approval !== undefined) dbPayload.approval = merged.approval;
+      if (merged.status !== undefined) dbPayload.status = merged.status;
+      if (merged.featured !== undefined) dbPayload.featured = Boolean(merged.featured);
+      if (merged.description !== undefined) dbPayload.description = merged.description;
+      if (merged.images !== undefined) dbPayload.images = merged.images;
+      if (merged.features !== undefined) dbPayload.features = merged.features;
+
+      const { data, error } = await supabase.from('properties').update(dbPayload).eq('id', id).select();
+      if (error || !data || data.length === 0) {
+        await supabase.from('properties').upsert([{ id, ...merged, ...dbPayload }], { onConflict: 'id' });
+      }
       await fetchSupabaseData();
     } catch (e) {
       console.error('Supabase error updating property', e);
